@@ -4,294 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionnaire de Commandes Pain Bio</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
-        p { text-align: right; margin-bottom: 10px; }
-        p a { color: #3498db; text-decoration: underline; }
-        
-        button.refresh-btn { background-color: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 14px; }
-        button.refresh-btn:hover { background-color: #2ecc71; }
-        
-        #loadingMessage { text-align: center; font-weight: bold; color: #3498db; }
-        .status-message { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center; }
-        .status-message.error { background-color: #f8d7da; color: #721c24; }
-        .status-message.hidden { display: none; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; overflow-x: auto; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; }
-        th { background-color: #3498db; color: white; cursor: pointer; user-select: none; }
-        th.sortable:hover { background-color: #2980b9; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        tr:hover { background-color: #f0f0f0; }
-        
+        /* Minimal local tweaks when needed */
         .items-list { list-style: none; padding: 0; margin: 0; }
         .items-list li { margin-bottom: 4px; }
-        
-        .action-btn { background-color: #3498db; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .action-btn:hover { background-color: #2980b9; }
-        
-        /* Checkboxes */
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        th.checkbox-header, td.checkbox-cell {
-            text-align: center;
-            width: 50px;
-        }
-        
-        /* Barre d'actions */
-        .bulk-actions-bar {
-            display: none;
-            background-color: #ecf0f1;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .bulk-actions-bar.show {
-            display: flex;
-        }
-        
-        .bulk-actions-bar span {
-            font-weight: bold;
-            color: #2c3e50;
-            flex: 1;
-        }
-        
-        .bulk-delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .bulk-delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        /* Modal */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-        }
-        
-        .close {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            font-size: 28px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-        }
-        
-        .close:hover { color: #000; }
-        
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-            text-align: center;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .modal-btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .modal-btn.email-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .modal-btn.email-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .modal-btn.delete-btn {
-        
-                    .modal-btn.phone-btn {
-                        background-color: #27ae60;
-                        color: white;
-                    }
-        
-                    .modal-btn.phone-btn:hover {
-                        background-color: #229954;
-                    }
-        
-                    .modal-btn.delete-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .modal-btn.delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .modal-btn.cancel-btn {
-            background-color: #95a5a6;
-            color: white;
-        }
-        
-        .modal-btn.cancel-btn:hover {
-            background-color: #7f8c8d;
-        }
-        
-        /* Pagination - harmonized with app design */
-        #paginationContainer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            padding: 6px;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 14px rgba(50, 115, 220, 0.06);
-        }
-
-        /* stronger selector to avoid accidental overrides */
-        #ordersList #paginationContainer .pagination-btn {
-            padding: 8px 12px;
-            border: 1px solid transparent !important;
-            background-color: #ffffff !important;
-            color: #3498db !important;
-            cursor: pointer;
-            border-radius: 999px;
-            font-size: 14px;
-            transition: all 0.15s ease;
-            box-shadow: none;
-        }
-
-        #ordersList #paginationContainer .pagination-btn:hover {
-            background-color: #3498db;
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(52,152,219,0.14);
-        }
-
-        #ordersList #paginationContainer .pagination-btn.active {
-            background-color: #3498db;
-            color: #ffffff;
-            font-weight: 700;
-            box-shadow: 0 8px 24px rgba(52,152,219,0.16);
-        }
-
-        #ordersList #paginationContainer .pagination-btn.secondary {
-            background-color: #f6f8fa !important;
-            color: #2c3e50 !important;
-            border: 1px solid #e6eef8 !important;
-        }
-
-        #ordersList #paginationContainer .page-info {
-            margin-left: 12px;
-            color: #2c3e50;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        @media (max-width: 700px) {
-            #paginationContainer { padding: 8px; gap: 6px; }
-            .pagination-btn { padding: 10px 14px; font-size: 15px; }
-        }
-
-        /* Larger targets on Android */
-        body.android #paginationContainer { padding: 10px; }
-        body.android .pagination-btn { padding: 12px 18px; font-size: 16px; }
-
-        /* Android-specific touch optimizations */
-        body.android .container { padding: 28px; }
-        body.android .action-btn { padding: 12px 18px; font-size: 16px; border-radius: 8px; }
-        body.android .modal-btn { padding: 16px 20px; font-size: 16px; border-radius: 8px; }
-        body.android .pagination-btn { padding: 12px 16px; font-size: 15px; }
-        body.android input[type="checkbox"] { width: 22px; height: 22px; }
-        body.android table th, body.android table td { padding: 14px; font-size: 15px; }
-        body.android .bulk-actions-bar { padding: 18px; gap: 12px; }
+        .bulk-actions-bar { display: none; }
+        .bulk-actions-bar.show { display: flex; }
+        .modal-custom .modal-content { max-width: 520px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🛠️ Tableau de Bord des Commandes</h1>
-        <p><a href="index.html">← Retour au Formulaire de Commande</a></p>
+    <div class="container py-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-center mb-3">🛠️ Tableau de Bord des Commandes</h1>
+                <p class="text-end mb-3"><a href="index.html" class="link-primary">← Retour au Formulaire de Commande</a></p>
 
-        <button class="refresh-btn" onclick="fetchOrders()">🔄 Actualiser les commandes</button>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <button class="btn btn-success" onclick="fetchOrders()">🔄 Actualiser les commandes</button>
+                    <div id="loadingMessage" class="text-primary fw-bold">Chargement des commandes...</div>
+                </div>
 
-        <p id="loadingMessage">Chargement des commandes...</p>
-        <p id="errorMessage" class="status-message error hidden"></p>
-        
-        <!-- Barre d'actions en masse -->
-        <div id="bulkActionsBar" class="bulk-actions-bar">
-            <span id="selectedCount">0 sélectionné(s)</span>
-            <button class="bulk-delete-btn" onclick="deleteSelectedOrders()">🗑️ Supprimer les sélectionnés</button>
+                <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                <!-- Barre d'actions en masse -->
+                <div id="bulkActionsBar" class="bulk-actions-bar alert alert-secondary d-flex align-items-center justify-content-between">
+                    <span id="selectedCount" class="fw-bold">0 sélectionné(s)</span>
+                    <button class="btn btn-danger" onclick="deleteSelectedOrders()">🗑️ Supprimer les sélectionnés</button>
+                </div>
+
+                <div id="ordersList" class="table-responsive mt-3">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-primary">
+                            <tr>
+                                <th class="text-center"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th>
+                                <th class="sortable" data-field="createdAt">📅 Date Commande</th>
+                                <th class="sortable" data-field="name">👤 Nom Client</th>
+                                <th class="sortable" data-field="email">📧 Email / Téléphone</th>
+                                <th class="sortable" data-field="date">📍 Date Retrait</th>
+                                <th class="sortable" data-field="renouveler">🔄 Renouvellement</th>
+                                <th>🛍️ Détail des Articles</th>
+                                <th>⚙️ Options</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Pagination" class="d-flex justify-content-center mt-3">
+                    <div id="paginationContainer"></div>
+                </nav>
+            </div>
         </div>
-        
-        <div id="ordersList">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="checkbox-header"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th>
-                        <th class="sortable" data-field="createdAt">📅 Date Commande</th>
-                        <th class="sortable" data-field="name">👤 Nom Client</th>
-                        <th class="sortable" data-field="email">📧 Email / Téléphone</th>
-                        <th class="sortable" data-field="date">📍 Date Retrait</th>
-                        <th class="sortable" data-field="renouveler">🔄 Renouvellement</th>
-                        <th>🛍️ Détail des Articles</th>
-                        <th>⚙️ Options</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTableBody">
-                </tbody>
-            </table>
-        </div>
-        
-        <div id="paginationContainer"></div>
     </div>
-    
+
+    <!-- Bootstrap bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script-gestionnaire.js"></script>
-        
 </body>
 </html>
 

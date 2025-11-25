@@ -167,7 +167,7 @@ function createPagination() {
     if (currentPage > 1) {
         const prevBtn = document.createElement('button');
         prevBtn.textContent = '← Précédent';
-        prevBtn.className = 'pagination-btn';
+        prevBtn.className = 'pagination-btn btn btn-outline-primary me-1';
         prevBtn.onclick = () => {
             currentPage--;
             renderPage();
@@ -180,7 +180,11 @@ function createPagination() {
     for (let i = 1; i <= totalPages; i++) {
         const pageBtn = document.createElement('button');
         pageBtn.textContent = i;
-        pageBtn.className = i === currentPage ? 'pagination-btn active' : 'pagination-btn';
+        if (i === currentPage) {
+            pageBtn.className = 'pagination-btn btn btn-primary pagination-active me-1';
+        } else {
+            pageBtn.className = 'pagination-btn btn btn-outline-primary me-1';
+        }
         pageBtn.onclick = () => {
             currentPage = i;
             renderPage();
@@ -193,7 +197,7 @@ function createPagination() {
     if (currentPage < totalPages) {
         const nextBtn = document.createElement('button');
         nextBtn.textContent = 'Suivant →';
-        nextBtn.className = 'pagination-btn';
+        nextBtn.className = 'pagination-btn btn btn-outline-primary ms-1';
         nextBtn.onclick = () => {
             currentPage++;
             renderPage();
@@ -204,7 +208,7 @@ function createPagination() {
 
     // Afficher le nombre de page actuelle
     const pageInfo = document.createElement('span');
-    pageInfo.className = 'page-info';
+    pageInfo.className = 'page-info ms-2';
     pageInfo.textContent = `Page ${currentPage} sur ${totalPages} (${allOrders.length} commandes)`;
     paginationContainer.appendChild(pageInfo);
 }
