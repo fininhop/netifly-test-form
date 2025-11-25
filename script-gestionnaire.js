@@ -35,7 +35,6 @@ try {
     console.error("Erreur lors de la récupération de l'instance de Firestore:", error);
 }
 
-
 // Rendre la fonction accessible globalement pour le bouton "Actualiser"
 window.fetchOrders = async function() {
     const ordersTableBody = document.getElementById('ordersTableBody');
