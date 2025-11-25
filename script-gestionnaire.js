@@ -204,7 +204,7 @@ function createPagination() {
 
     // Afficher le nombre de page actuelle
     const pageInfo = document.createElement('span');
-    pageInfo.style.marginLeft = '15px';
+    pageInfo.className = 'page-info';
     pageInfo.textContent = `Page ${currentPage} sur ${totalPages} (${allOrders.length} commandes)`;
     paginationContainer.appendChild(pageInfo);
 }

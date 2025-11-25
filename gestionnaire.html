@@ -193,11 +193,12 @@
             box-shadow: 0 4px 14px rgba(50, 115, 220, 0.06);
         }
 
-        .pagination-btn {
+        /* stronger selector to avoid accidental overrides */
+        #ordersList #paginationContainer .pagination-btn {
             padding: 8px 12px;
-            border: 1px solid transparent;
-            background-color: #ffffff;
-            color: #3498db;
+            border: 1px solid transparent !important;
+            background-color: #ffffff !important;
+            color: #3498db !important;
             cursor: pointer;
             border-radius: 999px;
             font-size: 14px;
@@ -205,27 +206,27 @@
             box-shadow: none;
         }
 
-        .pagination-btn:hover {
+        #ordersList #paginationContainer .pagination-btn:hover {
             background-color: #3498db;
             color: #ffffff;
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(52,152,219,0.14);
         }
 
-        .pagination-btn.active {
+        #ordersList #paginationContainer .pagination-btn.active {
             background-color: #3498db;
             color: #ffffff;
             font-weight: 700;
             box-shadow: 0 8px 24px rgba(52,152,219,0.16);
         }
 
-        .pagination-btn.secondary {
-            background-color: #f6f8fa;
-            color: #2c3e50;
-            border: 1px solid #e6eef8;
+        #ordersList #paginationContainer .pagination-btn.secondary {
+            background-color: #f6f8fa !important;
+            color: #2c3e50 !important;
+            border: 1px solid #e6eef8 !important;
         }
 
-        #paginationContainer .page-info {
+        #ordersList #paginationContainer .page-info {
             margin-left: 12px;
             color: #2c3e50;
             font-weight: 600;
