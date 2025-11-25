@@ -88,18 +88,162 @@
                                 <button type="button" onclick="changeQuantity('blanc_400g', 1)">+</button>
                             </div>
                         </div>
-                        <div class="product-item" data-product-id="blanc_800g" data-price="6.50">...</div>
-                        <div class="product-item" data-product-id="blanc_1kg" data-price="7.00">...</div>
-                        <div class="product-item" data-product-id="complet_400g" data-price="3.60">...</div>
-                        <div class="product-item" data-product-id="complet_800g" data-price="6.50">...</div>
-                        <div class="product-item" data-product-id="complet_1kg" data-price="7.00">...</div>
-                        <div class="product-item" data-product-id="cereale_400g" data-price="4.60">...</div>
-                        <div class="product-item" data-product-id="cereale_800g" data-price="8.50">...</div>
-                        <div class="product-item" data-product-id="cereale_1kg" data-price="9.00">...</div>
-                        <div class="product-item" data-product-id="epeautre_400g" data-price="4.60">...</div>
-                        <div class="product-item" data-product-id="epeautre_800g" data-price="8.50">...</div>
-                        <div class="product-item" data-product-id="epeautre_1kg" data-price="9.00">...</div>
-                        <div class="product-item" data-product-id="sarrazin" data-price="7.00">...</div>
+                        
+                        <div class="product-item" data-product-id="blanc_800g" data-price="6.50">
+                            <div class="product-info">
+                                <div class="product-name">Blanc 800g</div>
+                                <div class="product-price">€ 6.50</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('blanc_800g', -1)">-</button>
+                                <input type="number" id="blanc_800g" name="blanc_800g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('blanc_800g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="blanc_1kg" data-price="7.00">
+                            <div class="product-info">
+                                <div class="product-name">Blanc 1kg</div>
+                                <div class="product-price">€ 7.00</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('blanc_1kg', -1)">-</button>
+                                <input type="number" id="blanc_1kg" name="blanc_1kg" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('blanc_1kg', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="complet_400g" data-price="3.60">
+                            <div class="product-info">
+                                <div class="product-name">Complet 400g</div>
+                                <div class="product-price">€ 3.60</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('complet_400g', -1)">-</button>
+                                <input type="number" id="complet_400g" name="complet_400g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('complet_400g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="complet_800g" data-price="6.50">
+                            <div class="product-info">
+                                <div class="product-name">Complet 800g</div>
+                                <div class="product-price">€ 6.50</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('complet_800g', -1)">-</button>
+                                <input type="number" id="complet_800g" name="complet_800g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('complet_800g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="complet_1kg" data-price="7.00">
+                            <div class="product-info">
+                                <div class="product-name">Complet 1kg</div>
+                                <div class="product-price">€ 7.00</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('complet_1kg', -1)">-</button>
+                                <input type="number" id="complet_1kg" name="complet_1kg" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('complet_1kg', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="cereale_400g" data-price="4.60">
+                            <div class="product-info">
+                                <div class="product-name">Céréale 400g</div>
+                                <div class="product-price">€ 4.60</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('cereale_400g', -1)">-</button>
+                                <input type="number" id="cereale_400g" name="cereale_400g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('cereale_400g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="cereale_800g" data-price="8.50">
+                            <div class="product-info">
+                                <div class="product-name">Céréale 800g</div>
+                                <div class="product-price">€ 8.50</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('cereale_800g', -1)">-</button>
+                                <input type="number" id="cereale_800g" name="cereale_800g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('cereale_800g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="cereale_1kg" data-price="9.00">
+                            <div class="product-info">
+                                <div class="product-name">Céréale 1kg</div>
+                                <div class="product-price">€ 9.00</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('cereale_1kg', -1)">-</button>
+                                <input type="number" id="cereale_1kg" name="cereale_1kg" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('cereale_1kg', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="epeautre_400g" data-price="4.60">
+                            <div class="product-info">
+                                <div class="product-name">Épeautre 400g</div>
+                                <div class="product-price">€ 4.60</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('epeautre_400g', -1)">-</button>
+                                <input type="number" id="epeautre_400g" name="epeautre_400g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('epeautre_400g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="epeautre_800g" data-price="8.50">
+                            <div class="product-info">
+                                <div class="product-name">Épeautre 800g</div>
+                                <div class="product-price">€ 8.50</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('epeautre_800g', -1)">-</button>
+                                <input type="number" id="epeautre_800g" name="epeautre_800g" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('epeautre_800g', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="epeautre_1kg" data-price="9.00">
+                            <div class="product-info">
+                                <div class="product-name">Épeautre 1kg</div>
+                                <div class="product-price">€ 9.00</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('epeautre_1kg', -1)">-</button>
+                                <input type="number" id="epeautre_1kg" name="epeautre_1kg" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('epeautre_1kg', 1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-item" data-product-id="sarrazin" data-price="7.00">
+                            <div class="product-info">
+                                <div class="product-name">Sarrazin</div>
+                                <div class="product-price">€ 7.00</div>
+                            </div>
+                            <div class="quantity-control">
+                                <span>Unité:</span>
+                                <button type="button" onclick="changeQuantity('sarrazin', -1)">-</button>
+                                <input type="number" id="sarrazin" name="sarrazin" value="0" min="0" onchange="updateTotal()" class="quantity-input">
+                                <button type="button" onclick="changeQuantity('sarrazin', 1)">+</button>
+                            </div>
+                        </div>
                         </div>
 
                     <div class="total-section">
