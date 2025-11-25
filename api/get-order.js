@@ -1,48 +1,23 @@
 // /api/get-orders.js
 
-// --- 1. CONFIGURATION FIREBASE ET INITIALISATION ---
-
-// NOTE : firebaseConfig est défini dans config.js
-
-let db;
-let ordersCollection;
-
-// VÉRIFICATION CRUCIALE : Initialiser UNIQUEMENT si l'application par défaut n'existe pas.
-if (!firebase.apps.length) {
-    try {
-        firebase.initializeApp(firebaseConfig);
-        console.log("Firebase initialisé avec succès.");
-    } catch (error) {
-        console.error("Erreur lors de l'initialisation de Firebase:", error);
-    }
-} else {
-    // Si l'application existe déjà, on utilise l'instance par défaut.
-    console.log("Firebase App [DEFAULT] déjà existante.");
-}
-
-// Assurez-vous d'initialiser Firestore seulement APRÈS que l'application soit prête
-try {
-    // Récupère l'instance de Firestore de l'application (qu'elle soit nouvelle ou existante)
-    db = firebase.firestore();
-    ordersCollection = db.collection("orders"); 
-} catch (error) {
-    console.error("Erreur lors de l'initialisation de Firestore:", error);
-}
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 const admin = require('firebase-admin');
 
-// Vérifiez si l'application Firebase est déjà initialisée
 if (!admin.apps.length) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
+    try {
+        // Le contenu de cette variable doit être le JSON de votre clé de service Firebase Admin
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); 
+        
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+    } catch (e) {
+        // Si cette étape plante (par exemple, la variable d'environnement n'est pas définie ou est mal formatée)
+        console.error("Erreur critique d'initialisation Admin SDK:", e.message);
+        // Cela provoquera l'erreur 500
+    }
 }
 
-const db = admin.firestore();
+const db = admin.firestore(); // Utilisez admin.firestor
 
 export default async (req, res) => {
     if (req.method !== 'GET') {
