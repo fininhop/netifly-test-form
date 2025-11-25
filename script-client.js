@@ -32,6 +32,10 @@ try {
     console.error("Erreur lors de la récupération de l'instance de Firestore:", error);
 }
 
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const PRICES = {
     'blanc_400g': 3.60, 'blanc_800g': 6.50, 'blanc_1kg': 7.00,
     'complet_400g': 3.60, 'complet_800g': 6.50, 'complet_1kg': 7.00,
