@@ -40,21 +40,15 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Récupérer les commandes triées par le champ 'timestamp' de l'enregistrement
-        // Note: orderBy peut nécessiter un index Firestore pour plusieurs collections
-        let query = global.db.collection('orders');
-        
-        try {
-            query = query.orderBy('timestamp', 'desc');
-        } catch (e) {
-            // Si l'index n'existe pas, récupérer sans ordre
-            console.warn('Index timestamp non disponible, récupération sans tri:', e.message);
-        }
-        
-        const snapshot = await query.get();
+        // Récupérer TOUTES les commandes sans ordre d'abord (pour compatibilité avec anciennes données)
+        const snapshot = await global.db.collection('orders').get();
 
         const orders = snapshot.docs.map(doc => {
             const data = doc.data();
+            // Gérer les deux formats: nouveau (timestamp) et ancien (createdAt)
+            const timeField = data.timestamp || data.createdAt;
+            const createdAt = timeField ? timeField.toDate().toISOString() : null;
+            
             return {
                 id: doc.id,
                 name: data.name || 'N/A',
@@ -63,9 +57,12 @@ module.exports = async (req, res) => {
                 date: data.date, // Date de retrait
                 renouveler: data.renouveler, 
                 items: data.items,
-                // Conversion du Timestamp Firestore en chaîne ISO
-                createdAt: data.timestamp ? data.timestamp.toDate().toISOString() : null,
+                createdAt: createdAt,
             };
+        }).sort((a, b) => {
+            // Tri par date décroissante (les plus récentes d'abord)
+            if (!a.createdAt || !b.createdAt) return 0;
+            return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
         // Succès : renvoyer le tableau d'objets 'orders'
