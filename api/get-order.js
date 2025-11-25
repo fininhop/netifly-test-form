@@ -4,30 +4,23 @@
 // =======================================================
 
 const admin = require('firebase-admin');
-let db; // Déclarer db ici pour la portée globale
 
-// Bloc d'initialisation de l'Admin SDK
 if (!admin.apps.length) {
     try {
-        // La variable d'environnement doit être le JSON de la clé de service
+        // Le contenu de cette variable doit être le JSON de votre clé de service Firebase Admin
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); 
         
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
         });
-        // Initialiser db après l'application
-        db = admin.firestore(); 
-        
     } catch (e) {
-        console.error("Erreur CRITIQUE d'initialisation Admin SDK:", e.message);
-        // Stocker l'erreur pour la gestion dans le module.exports
-        global.adminInitError = e; 
+        // Si cette étape plante (par exemple, la variable d'environnement n'est pas définie ou est mal formatée)
+        console.error("Erreur critique d'initialisation Admin SDK:", e.message);
+        // Cela provoquera l'erreur 500
     }
-} else {
-    // Si l'application existe déjà, récupérer son instance de db
-    db = admin.firestore();
 }
 
+const db = admin.firestore(); // Utilisez admin.firestor
 // Utilisation du format Vercel pour l'exportation
 module.exports = async (req, res) => {
     // Si une erreur d'initialisation critique s'est produite
