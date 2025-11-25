@@ -17,9 +17,9 @@ if (!admin.apps.length) {
     }
 }
 
-const db = admin.firestore(); // Utilisez admin.firestor
+const db = admin.firestore();
 
-export default async (req, res) => {
+module.exports = async (req, res) => {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
@@ -43,7 +43,7 @@ export default async (req, res) => {
                 quantity: item.quantity
                 // Le prix n'est pas stocké pour éviter les incohérences si le prix change
             })),
-            createdAt: admin.firestore.FieldValue.serverTimestamp(), // Date d'enregistrement dans Firestore
+            timestamp: admin.firestore.FieldValue.serverTimestamp(), // Date d'enregistrement dans Firestore
         };
 
         const docRef = await db.collection('orders').add(orderData);

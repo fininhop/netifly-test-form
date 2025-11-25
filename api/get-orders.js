@@ -41,9 +41,17 @@ module.exports = async (req, res) => {
 
     try {
         // Récupérer les commandes triées par le champ 'timestamp' de l'enregistrement
-        const snapshot = await global.db.collection('orders')
-            .orderBy('timestamp', 'desc') 
-            .get();
+        // Note: orderBy peut nécessiter un index Firestore pour plusieurs collections
+        let query = global.db.collection('orders');
+        
+        try {
+            query = query.orderBy('timestamp', 'desc');
+        } catch (e) {
+            // Si l'index n'existe pas, récupérer sans ordre
+            console.warn('Index timestamp non disponible, récupération sans tri:', e.message);
+        }
+        
+        const snapshot = await query.get();
 
         const orders = snapshot.docs.map(doc => {
             const data = doc.data();
