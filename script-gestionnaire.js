@@ -5,9 +5,15 @@
 
 // Rendre la fonction accessible globalement pour le bouton "Actualiser"
 window.fetchOrders = async function() {
+    // Vérifier que les éléments DOM existent avant de continuer
     const ordersTableBody = document.getElementById('ordersTableBody');
     const loadingMessage = document.getElementById('loadingMessage');
     const errorMessage = document.getElementById('errorMessage');
+    
+    if (!ordersTableBody || !loadingMessage || !errorMessage) {
+        console.error('Erreur: Les éléments DOM ne sont pas chargés');
+        return;
+    }
     
     // Fonction pour le formatage de la date/heure
     function formatDateTime(isoString) {
