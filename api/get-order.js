@@ -1,18 +1,14 @@
 // /api/get-orders.js
 
-const firebaseConfig = {
-    // Si vous utilisez Next.js/React, vous utilisez process.env
-    // Sinon, si c'est un simple HTML/JS hébergé sur Vercel, vous devrez 
-    // peut-être utiliser des scripts d'injection ou une fonction de Vercel. 
-    // Pour une application simple, la structure de Next.js est la plus courante :
-    
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
-};
+try {
+    // Utiliser la variable globale définie dans config.js
+    firebase.initializeApp(firebaseConfig); 
+    const db = firebase.firestore();
+    const ordersCollection = db.collection("orders"); 
+    console.log("Firebase et Firestore initialisés.");
+} catch (error) {
+    console.error("Erreur lors de l'initialisation de Firebase:", error);
+}
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
