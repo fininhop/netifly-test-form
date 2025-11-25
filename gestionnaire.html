@@ -5,26 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionnaire de Commandes Pain Bio</title>
     <style>
-        body { font-family: sans-serif; background-color: #f5f5f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
-        th { background-color: #3498db; color: white; }
+        p { text-align: right; margin-bottom: 10px; }
+        p a { color: #3498db; text-decoration: underline; }
+        
+        button.refresh-btn { background-color: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 14px; }
+        button.refresh-btn:hover { background-color: #2ecc71; }
+        
+        #loadingMessage { text-align: center; font-weight: bold; color: #3498db; }
         .status-message { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center; }
-        .error { background-color: #f8d7da; color: #721c24; }
+        .status-message.error { background-color: #f8d7da; color: #721c24; }
+        .status-message.hidden { display: none; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; overflow-x: auto; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; }
+        th { background-color: #3498db; color: white; cursor: pointer; user-select: none; }
+        th.sortable:hover { background-color: #2980b9; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f0f0f0; }
+        
         .items-list { list-style: none; padding: 0; margin: 0; }
         .items-list li { margin-bottom: 4px; }
-        button { background-color: #27ae60; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 15px; transition: background-color 0.3s; }
-        button:hover { background-color: #2ecc71; }
+        
+        .action-btn { background-color: #3498db; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .action-btn:hover { background-color: #2980b9; }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+        
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+        }
+        
+        .close:hover { color: #000; }
+        
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .modal-btn.email-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .modal-btn.email-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .modal-btn.delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .modal-btn.delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .modal-btn.cancel-btn {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .modal-btn.cancel-btn:hover {
+            background-color: #7f8c8d;
+        }
+        
+        /* Pagination */
+        #paginationContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #3498db;
+            background-color: white;
+            color: #3498db;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .pagination-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .pagination-btn.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        
+        #paginationContainer span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🛠️ Tableau de Bord des Commandes - v2</h1>
-        <p style="text-align: right; margin-bottom: 10px;"><a href="index.html" style="color: #3498db; text-decoration: underline;">Retour au Formulaire de Commande</a></p>
+        <h1>🛠️ Tableau de Bord des Commandes</h1>
+        <p><a href="index.html">← Retour au Formulaire de Commande</a></p>
 
-        <button onclick="fetchOrders()">Actualiser les commandes</button>
+        <button class="refresh-btn" onclick="fetchOrders()">🔄 Actualiser les commandes</button>
 
         <p id="loadingMessage">Chargement des commandes...</p>
         <p id="errorMessage" class="status-message error hidden"></p>
@@ -33,18 +171,21 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Date Commande</th>
-                        <th>Nom Client</th>
-                        <th>Email / Téléphone</th>
-                        <th>Date Retrait</th>
-                        <th>Renouvellement</th>
-                        <th>Détail des Articles</th>
+                        <th class="sortable" data-field="createdAt">📅 Date Commande</th>
+                        <th class="sortable" data-field="name">👤 Nom Client</th>
+                        <th class="sortable" data-field="email">📧 Email / Téléphone</th>
+                        <th class="sortable" data-field="date">📍 Date Retrait</th>
+                        <th class="sortable" data-field="renouveler">🔄 Renouvellement</th>
+                        <th>🛍️ Détail des Articles</th>
+                        <th>⚙️ Options</th>
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
-                    </tbody>
+                </tbody>
             </table>
         </div>
+        
+        <div id="paginationContainer"></div>
     </div>
     
     <script src="script-gestionnaire.js"></script>
