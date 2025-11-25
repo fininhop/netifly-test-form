@@ -65,6 +65,12 @@ window.fetchOrders = async function() {
     }
 }
 
+// Simple escape to avoid injecting raw HTML in modal titles
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // Fonction pour le formatage de la date/heure
 function formatDateTime(isoString) {
     try {
@@ -135,13 +141,14 @@ function renderPage() {
         row.insertCell(5).textContent = order.renouveler === 'oui' ? '✅ Oui' : '❌ Non';
         row.insertCell(6).innerHTML = itemsList;
         
-        // Cellule d'actions (Options)
+        // Cellule d'actions (Options) - create button element and attach listener to avoid inline onclick issues
         const actionsCell = row.insertCell(7);
-        actionsCell.innerHTML = `
-            <button class="action-btn" onclick="showOrderOptions('${order.id}', '${order.name}', '${order.email}', '${order.phone || ''}')">
-                ⋮ Options
-            </button>
-        `;
+        const optBtn = document.createElement('button');
+        optBtn.type = 'button';
+        optBtn.className = 'btn btn-sm btn-outline-secondary';
+        optBtn.textContent = '⋮ Options';
+        optBtn.addEventListener('click', () => showOrderOptions(order.id, order.name, order.email, order.phone || ''));
+        actionsCell.appendChild(optBtn);
     });
 
     // Créer la pagination
@@ -216,7 +223,7 @@ function createPagination() {
 // Fonction pour afficher les options
 window.showOrderOptions = function(orderId, orderName, orderEmail, orderPhone) {
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal-custom';
     modal.id = 'optionsModal';
     // Build modal content with conditional phone button (only on Android)
     const sanitizedPhone = (orderPhone || '').trim();
@@ -233,10 +240,10 @@ window.showOrderOptions = function(orderId, orderName, orderEmail, orderPhone) {
     buttonsHtml += `<button class="modal-btn cancel-btn" onclick="document.getElementById('optionsModal').remove()">❌ Annuler</button>`;
 
     modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close" onclick="document.getElementById('optionsModal').remove()">×</span>
-            <h2>Options pour ${orderName}</h2>
-            <div class="modal-buttons">${buttonsHtml}</div>
+        <div class="modal-content p-3 bg-white rounded shadow-sm">
+            <button type="button" class="btn-close float-end" aria-label="Close" onclick="document.getElementById('optionsModal').remove()"></button>
+            <h2 class="h5 text-center mt-2">Options pour ${escapeHtml(orderName)}</h2>
+            <div class="d-grid gap-2 mt-3">${buttonsHtml}</div>
         </div>
     `;
     document.body.appendChild(modal);
@@ -268,22 +275,16 @@ window.openEmailClient = function(email, orderName, phone) {
     if (isAndroid || isIOS) {
         // Sur mobile, proposer email et appel
         const mobileModal = document.createElement('div');
-        mobileModal.className = 'modal';
+        mobileModal.className = 'modal-custom';
         mobileModal.id = 'mobileActionsModal';
         mobileModal.innerHTML = `
-            <div class="modal-content">
-                <span class="close" onclick="document.getElementById('mobileActionsModal').remove()">×</span>
-                <h2>Choisir une action</h2>
-                <div class="modal-buttons">
-                    <button class="modal-btn email-btn" onclick="window.location.href = 'mailto:${email}?subject=${subject}&body=${body}'; document.getElementById('mobileActionsModal').remove(); document.getElementById('optionsModal').remove();">
-                        📧 Envoyer un Email
-                    </button>
-                    <button class="modal-btn phone-btn" onclick="window.location.href = 'tel:${(phone || '').replace(/[^0-9+\- ]/g, '') || email.replace(/[^0-9+\- ]/g, '')}'; document.getElementById('mobileActionsModal').remove(); document.getElementById('optionsModal').remove();">
-                        📞 Appeler
-                    </button>
-                    <button class="modal-btn cancel-btn" onclick="document.getElementById('mobileActionsModal').remove()">
-                        ❌ Annuler
-                    </button>
+            <div class="modal-content p-3 bg-white rounded shadow-sm">
+                <button type="button" class="btn-close float-end" aria-label="Close" onclick="document.getElementById('mobileActionsModal').remove()"></button>
+                <h2 class="h5 text-center mt-2">Choisir une action</h2>
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-primary" onclick="window.location.href = 'mailto:${email}?subject=${subject}&body=${body}'; document.getElementById('mobileActionsModal').remove(); document.getElementById('optionsModal').remove();">📧 Envoyer un Email</button>
+                    <button class="btn btn-success" onclick="window.location.href = 'tel:${(phone || '').replace(/[^0-9+\- ]/g, '') || email.replace(/[^0-9+\- ]/g, '')}'; document.getElementById('mobileActionsModal').remove(); document.getElementById('optionsModal').remove();">📞 Appeler</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('mobileActionsModal').remove()">❌ Annuler</button>
                 </div>
             </div>
         `;
@@ -291,25 +292,17 @@ window.openEmailClient = function(email, orderName, phone) {
     } else if (isDesktop) {
         // Sur desktop, proposer un choix
         const emailModal = document.createElement('div');
-        emailModal.className = 'modal';
+        emailModal.className = 'modal-custom';
         emailModal.id = 'emailModal';
         emailModal.innerHTML = `
-            <div class="modal-content">
-                <span class="close" onclick="document.getElementById('emailModal').remove()">×</span>
-                <h2>Choisir un client email</h2>
-                <div class="modal-buttons">
-                    <button class="modal-btn" onclick="window.open('${gmailUrl}', '_blank'); document.getElementById('emailModal').remove(); document.getElementById('optionsModal').remove();">
-                        Gmail
-                    </button>
-                    <button class="modal-btn" onclick="window.open('${yahooUrl}', '_blank'); document.getElementById('emailModal').remove(); document.getElementById('optionsModal').remove();">
-                        Yahoo
-                    </button>
-                    <button class="modal-btn" onclick="window.location.href = 'mailto:${email}?subject=${subject}&body=${body}'; document.getElementById('emailModal').remove(); document.getElementById('optionsModal').remove();">
-                        Client Email par Défaut
-                    </button>
-                    <button class="modal-btn cancel-btn" onclick="document.getElementById('emailModal').remove()">
-                        ❌ Annuler
-                    </button>
+            <div class="modal-content p-3 bg-white rounded shadow-sm">
+                <button type="button" class="btn-close float-end" aria-label="Close" onclick="document.getElementById('emailModal').remove()"></button>
+                <h2 class="h5 text-center mt-2">Choisir un client email</h2>
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-outline-primary" onclick="window.open('${gmailUrl}', '_blank'); document.getElementById('emailModal').remove(); document.getElementById('optionsModal').remove();">Gmail</button>
+                    <button class="btn btn-outline-primary" onclick="window.open('${yahooUrl}', '_blank'); document.getElementById('emailModal').remove(); document.getElementById('optionsModal').remove();">Yahoo</button>
+                    <button class="btn btn-secondary" onclick="window.location.href = 'mailto:${email}?subject=${subject}&body=${body}'; document.getElementById('emailModal').remove(); document.getElementById('optionsModal').remove();">Client Email par Défaut</button>
+                    <button class="btn btn-light" onclick="document.getElementById('emailModal').remove()">❌ Annuler</button>
                 </div>
             </div>
         `;
