@@ -13,6 +13,7 @@ let ordersCollection;
 // 1. Initialiser l'application avec un nom unique UNIQUEMENT si elle n'existe pas
 if (!firebase.apps.some(app => app.name === APP_NAME)) {
     try {
+        // Initialisation nommée
         firebase.initializeApp(firebaseConfig, APP_NAME);
         console.log(`Firebase initialisé avec succès sous le nom '${APP_NAME}'.`);
     } catch (error) {
@@ -22,19 +23,23 @@ if (!firebase.apps.some(app => app.name === APP_NAME)) {
 
 // 2. Récupérer l'instance de l'application nommée pour Firestore
 try {
-    // Récupère l'instance de l'application nommée 'MonAppPain'
+    // Récupère l'instance de l'application nommée
     const appInstance = firebase.app(APP_NAME); 
     db = firebase.firestore(appInstance);
     ordersCollection = db.collection("orders"); 
+    
+    // Mettre à jour la ligne d'affichage d'erreur précédente
+    // (L'ancienne ligne 'MonAppPain' était probablement une erreur de copier-coller)
+    
 } catch (error) {
-    // Si l'application par défaut existe, mais que 'MonAppPain' n'existe pas, 
-    // et que nous ne pouvons pas l'initialiser, cela peut être une erreur.
+    // C'est ici que l'erreur de connexion à Firestore sera capturée si elle existe
     console.error("Erreur lors de la récupération de l'instance de Firestore:", error);
 }
 
+// ---------------------------------------------------------------------
+// L'ANCIENNE INITIALISATION EN DOUBLE A ÉTÉ SUPPRIMÉE ICI.
+// ---------------------------------------------------------------------
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
 const PRICES = {
     'blanc_400g': 3.60, 'blanc_800g': 6.50, 'blanc_1kg': 7.00,
