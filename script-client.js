@@ -4,37 +4,33 @@
 // de la commande à l'API Vercel (/api/save-order).
 // =======================================================
 
-// --- 1. CONFIGURATION FIREBASE ET INITIALISATION ---
-
-// NOTE : firebaseConfig est défini dans config.js
+// Définition du nom unique de l'application
+const APP_NAME = 'CommandeDePain'; 
 
 let db;
 let ordersCollection;
 
-// VÉRIFICATION CRUCIALE : Initialiser UNIQUEMENT si l'application par défaut n'existe pas.
-if (!firebase.apps.length) {
+// 1. Initialiser l'application avec un nom unique UNIQUEMENT si elle n'existe pas
+if (!firebase.apps.some(app => app.name === APP_NAME)) {
     try {
-        firebase.initializeApp(firebaseConfig);
-        console.log("Firebase initialisé avec succès.");
+        firebase.initializeApp(firebaseConfig, APP_NAME);
+        console.log(`Firebase initialisé avec succès sous le nom '${APP_NAME}'.`);
     } catch (error) {
         console.error("Erreur lors de l'initialisation de Firebase:", error);
     }
-} else {
-    // Si l'application existe déjà, on utilise l'instance par défaut.
-    console.log("Firebase App [DEFAULT] déjà existante.");
-}
+} 
 
-// Assurez-vous d'initialiser Firestore seulement APRÈS que l'application soit prête
+// 2. Récupérer l'instance de l'application nommée pour Firestore
 try {
-    // Récupère l'instance de Firestore de l'application (qu'elle soit nouvelle ou existante)
-    db = firebase.firestore();
+    // Récupère l'instance de l'application nommée 'MonAppPain'
+    const appInstance = firebase.app(APP_NAME); 
+    db = firebase.firestore(appInstance);
     ordersCollection = db.collection("orders"); 
 } catch (error) {
-    console.error("Erreur lors de l'initialisation de Firestore:", error);
+    // Si l'application par défaut existe, mais que 'MonAppPain' n'existe pas, 
+    // et que nous ne pouvons pas l'initialiser, cela peut être une erreur.
+    console.error("Erreur lors de la récupération de l'instance de Firestore:", error);
 }
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
 const PRICES = {
     'blanc_400g': 3.60, 'blanc_800g': 6.50, 'blanc_1kg': 7.00,
