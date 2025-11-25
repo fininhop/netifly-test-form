@@ -3,8 +3,10 @@
 // Gère l'affichage des commandes récupérées via l'API Vercel /api/get-orders
 // =======================================================
 
-// Définition du nom unique de l'application (si l'initialisation est toujours requise)
-const APP_NAME = 'CommandeDePain'; 
+// Ligne de débogage pour confirmer si firebase est défini
+console.log("Firebase object status:", typeof firebase); 
+
+const APP_NAME = 'CommandeDePain';
 
 // Initialisation simplifiée de Firebase (SDK Client)
 if (!firebase.apps.some(app => app.name === APP_NAME)) {
