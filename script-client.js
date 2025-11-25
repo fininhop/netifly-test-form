@@ -4,6 +4,23 @@
 // de la commande à l'API Vercel (/api/save-order).
 // =======================================================
 
+const firebaseConfig = {
+    // Si vous utilisez Next.js/React, vous utilisez process.env
+    // Sinon, si c'est un simple HTML/JS hébergé sur Vercel, vous devrez 
+    // peut-être utiliser des scripts d'injection ou une fonction de Vercel. 
+    // Pour une application simple, la structure de Next.js est la plus courante :
+    
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const PRICES = {
     'blanc_400g': 3.60, 'blanc_800g': 6.50, 'blanc_1kg': 7.00,
     'complet_400g': 3.60, 'complet_800g': 6.50, 'complet_1kg': 7.00,
