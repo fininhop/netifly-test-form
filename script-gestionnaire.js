@@ -3,38 +3,6 @@
 // Gère l'affichage des commandes récupérées via l'API Vercel /api/get-orders
 // =======================================================
 
-// --- 1. CONFIGURATION FIREBASE ET INITIALISATION ---
-
-// NOTE : firebaseConfig est défini dans config.js
-
-let db;
-let ordersCollection;
-
-// VÉRIFICATION CRUCIALE : Initialiser UNIQUEMENT si l'application par défaut n'existe pas.
-if (!firebase.apps.length) {
-    try {
-        firebase.initializeApp(firebaseConfig);
-        console.log("Firebase initialisé avec succès.");
-    } catch (error) {
-        console.error("Erreur lors de l'initialisation de Firebase:", error);
-    }
-} else {
-    // Si l'application existe déjà, on utilise l'instance par défaut.
-    console.log("Firebase App [DEFAULT] déjà existante.");
-}
-
-// Assurez-vous d'initialiser Firestore seulement APRÈS que l'application soit prête
-try {
-    // Récupère l'instance de Firestore de l'application (qu'elle soit nouvelle ou existante)
-    db = firebase.firestore();
-    ordersCollection = db.collection("orders"); 
-} catch (error) {
-    console.error("Erreur lors de l'initialisation de Firestore:", error);
-}
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 // Rendre la fonction accessible globalement pour le bouton "Actualiser"
 window.fetchOrders = async function() {
     const ordersTableBody = document.getElementById('ordersTableBody');
