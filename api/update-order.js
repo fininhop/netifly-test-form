@@ -1,7 +1,6 @@
 // api/update-order.js
 // Permet à un administrateur de mettre à jour certains champs d'une commande (PATCH semantics via POST body)
 const admin = require('firebase-admin');
-const { augmentRes, ensureQuery, parseBody } = require('./_http');
 
 if (!admin.apps.length) {
     try {
@@ -17,9 +16,6 @@ if (!admin.apps.length) {
 }
 
 module.exports = async (req, res) => {
-    augmentRes(res);
-    ensureQuery(req);
-    if (req.method !== 'GET' && req.method !== 'HEAD') await parseBody(req);
     if (global.adminInitError) {
         return res.status(500).json({ message: 'Erreur de configuration serveur.', error: global.adminInitError.message });
     }

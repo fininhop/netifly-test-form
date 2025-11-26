@@ -4,7 +4,6 @@
 // =======================================================
 
 const admin = require('firebase-admin');
-const { augmentRes, ensureQuery } = require('./_http');
 
 // Initialisation de l'Admin SDK : seulement s'il n'est pas déjà initialisé
 if (!admin.apps.length) {
@@ -27,8 +26,6 @@ if (!admin.apps.length) {
 
 // Le gestionnaire de la fonction Serverless Vercel
 module.exports = async (req, res) => {
-    augmentRes(res);
-    ensureQuery(req);
     // Vérification de l'erreur d'initialisation
     if (global.adminInitError) {
         return res.status(500).json({ 

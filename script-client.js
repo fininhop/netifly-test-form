@@ -55,7 +55,7 @@ let availableSeasons = [];
 // Fonction pour charger les saisons disponibles
 async function loadSeasons() {
     try {
-        const response = await fetch('/api/seasons-public');
+        const response = await fetch('/api/seasons');
         const result = await response.json();
 
         if (response.ok && result.seasons) {

@@ -3,7 +3,6 @@
 
 const admin = require('firebase-admin');
 const bcrypt = require('bcryptjs');
-const { augmentRes, ensureQuery, parseBody } = require('./_http');
 
 if (!admin.apps.length) {
     try {
@@ -17,9 +16,6 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 module.exports = async (req, res) => {
-    augmentRes(res);
-    ensureQuery(req);
-    if (req.method !== 'GET' && req.method !== 'HEAD') await parseBody(req);
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }

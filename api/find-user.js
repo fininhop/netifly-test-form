@@ -1,6 +1,5 @@
 // /api/find-user.js
 const admin = require('firebase-admin');
-const { augmentRes, ensureQuery } = require('./_http');
 
 if (!admin.apps.length) {
     try {
@@ -14,8 +13,6 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 module.exports = async (req, res) => {
-    augmentRes(res);
-    ensureQuery(req);
     if (req.method !== 'GET') return res.status(405).json({ message: 'Method Not Allowed' });
 
     try {
