@@ -30,3 +30,6 @@ Thumbs.db
 
 # Config files with secrets (if any)
 config.local.js
+
+# Note: config.js est généré par Vercel au build
+# Si vous l'avez en local avec de vraies clés, ne le commitez pas
