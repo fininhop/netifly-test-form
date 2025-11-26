@@ -37,7 +37,14 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { orderId } = req.body;
+        // Vérifier token admin
+        const provided = req.headers['x-admin-token'] || req.query.adminToken || null;
+        const expected = process.env.ADMIN_TOKEN || null;
+        if (!expected || provided !== expected) {
+            return res.status(401).json({ message: 'Accès administrateur requis' });
+        }
+
+        const { orderId } = req.body || {};
 
         // Validation
         if (!orderId) {
@@ -47,16 +54,10 @@ module.exports = async (req, res) => {
         // Supprimer la commande
         await global.db.collection('orders').doc(orderId).delete();
 
-        res.status(200).json({
-            message: 'Commande supprimée avec succès',
-            orderId: orderId
-        });
+        res.status(200).json({ message: 'Commande supprimée avec succès', orderId: orderId });
 
     } catch (error) {
         console.error('Erreur de suppression Firestore:', error);
-        res.status(500).json({
-            message: 'Erreur interne du serveur lors de la suppression de la commande.',
-            error: error.message
-        });
+        res.status(500).json({ message: 'Erreur interne du serveur lors de la suppression de la commande.', error: error.message });
     }
 };
