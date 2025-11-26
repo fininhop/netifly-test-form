@@ -2,6 +2,7 @@
 
 const adminOnly = require('../middleware/admin-only');
 const { augmentRes, ensureQuery, parseBody } = require('./_http');
+const VERSION = '2025-11-27-public-get-2';
 
 const admin = require('firebase-admin');
 
@@ -31,11 +32,11 @@ async function handler(req, res) {
                 if (seasonId) {
                     // Récupérer une saison spécifique
                     const season = await getSeasonById(seasonId);
-                    return res.status(200).json({ season });
+                    return res.status(200).json({ season, version: VERSION });
                 } else {
                     // Récupérer toutes les saisons
                     const seasons = await getAllSeasons();
-                    return res.status(200).json({ seasons });
+                    return res.status(200).json({ seasons, version: VERSION });
                 }
 
             case 'POST':
