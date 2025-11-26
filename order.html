@@ -29,6 +29,10 @@
         .submit-buttons { display:grid; grid-template-columns:1fr; gap:15px; margin-top:20px; }
         .submit-btn { padding:15px 25px; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; text-decoration:none; text-align:center; transition:.3s; display:flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(45deg,#3498db,#2980b9); color:#fff; }
         .submit-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.2); }
+        .header-btn { padding:8px 16px; border:none; border-radius:6px; font-size:14px; font-weight:500; cursor:pointer; text-decoration:none; text-align:center; transition:.3s; display:flex; align-items:center; justify-content:center; gap:6px; background:linear-gradient(45deg,#3498db,#2980b9); color:#fff; }
+        .header-btn:hover { transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,0.15); }
+        .header-btn-outline { padding:8px 16px; border:2px solid #3498db; border-radius:6px; font-size:14px; font-weight:500; cursor:pointer; text-decoration:none; text-align:center; transition:.3s; display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; color:#3498db; }
+        .header-btn-outline:hover { background:#3498db; color:#fff; transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,0.15); }
         .submit-info { background:#e8f5e8; padding:15px; border-radius:8px; margin-bottom:20px; color:#27ae60; font-weight:500; text-align:center; }
         .total-section { background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0; text-align:right; }
         .total-amount { font-size:18px; font-weight:700; color:#2c3e50; }
@@ -48,8 +52,8 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h1 class="mb-0">Commande de pain bio cuits au feu de bois</h1>
                 <div class="d-flex gap-2">
-                    <a href="my-orders.html" class="btn btn-outline-info btn-sm">📋 Mes commandes</a>
-                    <a href="#" id="logoutLink" class="btn btn-outline-danger btn-sm">Se déconnecter</a>
+                    <a href="my-orders.html" class="header-btn-outline">📋 Mes commandes</a>
+                    <a href="#" id="logoutLink" class="header-btn">Se déconnecter</a>
                 </div>
             </div>
             <form id="clientOrderForm">
@@ -88,7 +92,7 @@
                     <div class="submit-info">Votre commande sera enregistrée automatiquement.</div>
                     <div class="submit-buttons">
                         <button type="submit" class="submit-btn btn btn-primary">💾 Enregistrer la commande (via API)</button>
-                        <a href="my-orders.html" class="submit-btn btn btn-info" style="background:linear-gradient(45deg,#17a2b8,#138496);">📋 Voir mes commandes</a>
+                        <a href="my-orders.html" class="submit-btn">📋 Voir mes commandes</a>
                     </div>
                 </div>
             </form>

@@ -28,6 +28,10 @@
         .item-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
         .item-row:last-child { border-bottom: none; }
         .badge { font-size: 0.85rem; padding: 4px 10px; }
+        .header-btn { padding:8px 16px; border:none; border-radius:6px; font-size:14px; font-weight:500; cursor:pointer; text-decoration:none; text-align:center; transition:.3s; display:flex; align-items:center; justify-content:center; gap:6px; background:linear-gradient(45deg,#3498db,#2980b9); color:#fff; }
+        .header-btn:hover { transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,0.15); }
+        .header-btn-outline { padding:8px 16px; border:2px solid #3498db; border-radius:6px; font-size:14px; font-weight:500; cursor:pointer; text-decoration:none; text-align:center; transition:.3s; display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; color:#3498db; }
+        .header-btn-outline:hover { background:#3498db; color:#fff; transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,0.15); }
     </style>
 </head>
 <body>
@@ -50,8 +54,8 @@
                     <p class="page-subtitle mb-0">Historique de vos commandes de pain bio</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="order.html" class="btn btn-outline-primary btn-sm">← Nouvelle commande</a>
-                    <a href="#" id="logoutLink" class="btn btn-danger btn-sm">Se déconnecter</a>
+                    <a href="order.html" class="header-btn-outline">← Nouvelle commande</a>
+                    <a href="#" id="logoutLink" class="header-btn">Se déconnecter</a>
                 </div>
             </div>
         </div>

@@ -16,8 +16,10 @@
         .error-text { font-size: 0.85rem; color: #dc3545; margin-top: 0.25rem; display: none; }
         .error-text.show { display: block; }
         .form-control.is-invalid { border-color: #dc3545; }
-        .btn-primary { padding: 0.75rem 1.5rem; font-weight: 500; }
-        .btn-outline-success { padding: 0.75rem 1.5rem; font-weight: 500; }
+        .btn-primary { padding: 0.75rem 1.5rem; font-weight: 500; background: linear-gradient(45deg,#3498db,#2980b9); border: none; color: #fff; transition: .3s; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); background: linear-gradient(45deg,#2980b9,#3498db); }
+        .btn-outline-success { padding: 0.75rem 1.5rem; font-weight: 500; border: 2px solid #27ae60; background: transparent; color: #27ae60; transition: .3s; }
+        .btn-outline-success:hover { background: #27ae60; color: #fff; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
     </style>
 </head>
 <body>

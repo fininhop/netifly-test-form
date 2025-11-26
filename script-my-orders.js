@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const orders = (result && result.orders) ? result.orders : [];
         if (!orders.length) {
-            container.innerHTML = '<div class="alert alert-light text-center py-5"><h5>Aucune commande trouvée</h5><p class="text-muted">Vous n\'avez pas encore passé de commande.</p><a href="order.html" class="btn btn-primary">Commander maintenant</a></div>';
+            container.innerHTML = '<div class="alert alert-light text-center py-5"><h5>Aucune commande trouvée</h5><p class="text-muted">Vous n\'avez pas encore passé de commande.</p><a href="index.html" class="btn btn-primary">Commander maintenant</a></div>';
             return;
         }
 
