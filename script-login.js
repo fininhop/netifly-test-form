@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
 
                 msg.innerHTML = '<div class="alert alert-success">Connecté ! Redirection…</div>';
-                setTimeout(() => { window.location.href = 'index.html'; }, 900);
+                setTimeout(() => { window.location.href = 'order.html'; }, 900);
             } else {
                 if (response.status >= 500) {
                     msg.innerHTML = '<div class="alert alert-danger">Erreur serveur, réessayez plus tard.</div>';
