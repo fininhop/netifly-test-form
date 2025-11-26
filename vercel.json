@@ -1,13 +1,3 @@
 {
-  "build": {
-    "env": {
-      "VITE_FIREBASE_API_KEY": "$NEXT_PUBLIC_FIREBASE_API_KEY",
-      "VITE_FIREBASE_AUTH_DOMAIN": "$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-      "VITE_FIREBASE_PROJECT_ID": "$NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-      "VITE_FIREBASE_APP_ID": "$NEXT_PUBLIC_FIREBASE_APP_ID"
-    }
-  },
-  "buildCommand": "echo \"const firebaseConfig = { apiKey: '$VITE_FIREBASE_API_KEY', authDomain: '$VITE_FIREBASE_AUTH_DOMAIN', projectId: '$VITE_FIREBASE_PROJECT_ID', appId: '$VITE_FIREBASE_APP_ID' };\" > config.js",
-  
-  "outputDirectory": "." 
+  "buildCommand": "echo \"const firebaseConfig = { apiKey: '$NEXT_PUBLIC_FIREBASE_API_KEY', authDomain: '$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', projectId: '$NEXT_PUBLIC_FIREBASE_PROJECT_ID', appId: '$NEXT_PUBLIC_FIREBASE_APP_ID' };\" > config.js"
 }

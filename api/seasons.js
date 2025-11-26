@@ -1,6 +1,7 @@
 // api/seasons.js - Gestion des saisons de commande
 
 const adminOnly = require('../middleware/admin-only');
+const { augmentRes, ensureQuery, parseBody } = require('./_http');
 
 const admin = require('firebase-admin');
 
@@ -18,9 +19,9 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 async function handler(req, res) {
-    // Vérifier le token admin pour toutes les opérations
-    if (!adminOnly(req, res)) return;
-
+    augmentRes(res);
+    ensureQuery(req);
+    if (req.method !== 'GET' && req.method !== 'HEAD') await parseBody(req);
     const { method } = req;
     const { seasonId } = req.query;
 
@@ -38,6 +39,8 @@ async function handler(req, res) {
                 }
 
             case 'POST':
+                // Opérations d'écriture réservées à l'admin
+                if (!adminOnly(req, res)) return;
                 const { name, startDate, endDate, description } = req.body;
                 if (!name || !startDate || !endDate) {
                     return res.status(400).json({ message: 'Nom, date de début et date de fin requis' });
@@ -47,6 +50,8 @@ async function handler(req, res) {
                 return res.status(201).json({ season: newSeason, message: 'Saison créée' });
 
             case 'PUT':
+                // Opérations d'écriture réservées à l'admin
+                if (!adminOnly(req, res)) return;
                 if (!seasonId) {
                     return res.status(400).json({ message: 'ID de saison requis' });
                 }
@@ -55,6 +60,8 @@ async function handler(req, res) {
                 return res.status(200).json({ season: updatedSeason, message: 'Saison mise à jour' });
 
             case 'DELETE':
+                // Opérations d'écriture réservées à l'admin
+                if (!adminOnly(req, res)) return;
                 if (!seasonId) {
                     return res.status(400).json({ message: 'ID de saison requis' });
                 }

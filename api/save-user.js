@@ -1,6 +1,7 @@
 // /api/save-user.js
 
 const admin = require('firebase-admin');
+const { augmentRes, ensureQuery, parseBody } = require('./_http');
 const bcrypt = require('bcryptjs');
 
 if (!admin.apps.length) {
@@ -19,6 +20,9 @@ if (!admin.apps.length) {
 const db = global.db;
 
 module.exports = async (req, res) => {
+    augmentRes(res);
+    ensureQuery(req);
+    if (req.method !== 'GET' && req.method !== 'HEAD') await parseBody(req);
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }

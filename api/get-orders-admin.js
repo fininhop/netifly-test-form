@@ -1,6 +1,7 @@
 // api/get-orders-admin.js
 // Retourne toutes les commandes; requiert en-tête `x-admin-token` correspondant à ADMIN_TOKEN (variable d'env)
 const admin = require('firebase-admin');
+const { augmentRes, ensureQuery } = require('./_http');
 
 if (!admin.apps.length) {
     try {
@@ -16,6 +17,8 @@ if (!admin.apps.length) {
 }
 
 module.exports = async (req, res) => {
+    augmentRes(res);
+    ensureQuery(req);
     if (global.adminInitError) {
         return res.status(500).json({ message: 'Erreur de configuration serveur.', error: global.adminInitError.message });
     }
