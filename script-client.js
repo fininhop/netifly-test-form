@@ -88,7 +88,7 @@ window.updateTotal = function() {
         basketInfo.classList.remove('error');
         basketInfo.classList.add('success');
     } else {
-        basketInfo.innerHTML = 'Aucun produit dans votre panier.';
+        basketInfo.innerHTML = 'No product in your basket.';
         basketInfo.classList.remove('success');
         basketInfo.classList.add('error');
     }
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!currentUser) {
         // Redirige vers la page de connexion si l'utilisateur n'est pas identifié
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutLink.addEventListener('click', (e) => {
             e.preventDefault();
             localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         });
     }
 

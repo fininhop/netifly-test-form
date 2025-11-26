@@ -31,76 +31,30 @@
                 <h4 class="mb-0">🔐 Accès Administrateur</h4>
             </div>
             <div class="card-body">
-                <form id="adminLoginForm">
-                    <div class="mb-3">
-                        <label class="form-label">Token d'administration</label>
-                        <input id="adminTokenInput" type="password" class="form-control" placeholder="Entrez votre token" required />
-                        <div class="form-text">Le token est défini via la variable ADMIN_TOKEN sur Vercel.</div>
-                    </div>
-                    <button class="btn btn-primary w-100" type="submit">Se connecter</button>
-                </form>
-                <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Zone d'administration (masquée par défaut) -->
-    <div id="adminArea" class="container-fluid py-4 d-none">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h3 class="mb-0">🛠️ Gestionnaire de Commandes (Admin)</h3>
+                <!DOCTYPE html>
+                <html lang="fr">
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width,initial-scale=1" />
+                  <title>Redirection Administration</title>
+                  <meta http-equiv="refresh" content="0; url=admin.html" />
+                  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+                  <style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui;background:#fff;} .box{max-width:400px;padding:30px;border:1px solid #eee;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.08);}</style>
+                </head>
+                <body>
+                  <div class="box text-center">
+                    <h5 class="mb-3">Redirection vers l'interface administrateur…</h5>
+                    <p class="text-muted small">Si rien ne se passe, <a href="admin.html">cliquez ici</a>.</p>
+                  </div>
+                  <script>setTimeout(()=>{window.location.href='admin.html';},200);</script>
+                </body>
+                </html>
                 <button id="logoutAdmin" class="btn btn-sm btn-outline-secondary">Déconnexion</button>
+
             </div>
+
             <div class="card-body">
+
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
                     <div class="d-flex gap-2 flex-wrap">
-                        <button id="refreshBtn" class="btn btn-success btn-sm">🔄 Actualiser</button>
-                        <button id="deleteSelectedBtn" class="btn btn-danger btn-sm d-none">🗑️ Supprimer sélection</button>
-                    </div>
-                    <div id="adminMessage" class="text-muted small"></div>
-                </div>
-
-                <div id="ordersTableContainer" class="table-responsive"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal d'édition -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Éditer la commande</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="editOrderId" />
-                    <div class="mb-3">
-                        <label class="form-label">Date de retrait</label>
-                        <input type="date" id="editDate" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Renouveler</label>
-                        <select id="editRenouveler" class="form-select">
-                            <option value="">— Ne pas changer —</option>
-                            <option value="oui">oui</option>
-                            <option value="non">non</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" id="saveEditBtn" class="btn btn-primary">Enregistrer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script-gestionnaire.js"></script>
-</body>
-</html>
-
-
-
-

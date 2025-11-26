@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { currentUser = stored ? JSON.parse(stored) : null; } catch(e) { currentUser = null; }
 
     if (!currentUser) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 
     if (logout) {
-        logout.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('currentUser'); window.location.href = 'login.html'; });
+        logout.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('currentUser'); window.location.href = 'index.html'; });
     }
 
     try {
