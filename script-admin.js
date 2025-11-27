@@ -809,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sorted = [...list].sort((a,b)=> String(a.name||'').localeCompare(String(b.name||'')));
         let grandTotalPrice = 0, grandTotalWeight = 0;
         const sections = [];
-        const recap = {}; // { name: { qty: number } } (boulanger: uniquement quantité par type de pain)
+        const recap = {}; // { label: { qty: number } } où label = "TYPE + POIDS"
         sorted.forEach(o => {
             let subTotalPrice = 0, subTotalWeight = 0;
             const body = [[
@@ -841,7 +841,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 subTotalPrice += linePrice;
                 subTotalWeight += lineWeight;
                 // Récap global pour fournées
-                const key = String(it.name||'').trim();
+                const baseName = String(it.name||'').trim();
+                const weightLabel = wkg ? `${wkg.toFixed(3)} kg` : '';
+                const key = weightLabel ? `${baseName} ${weightLabel}` : baseName;
                 if(!recap[key]) recap[key] = { qty:0 };
                 recap[key].qty += qty;
                 body.push([
@@ -864,12 +866,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 ]
             });
         });
-        // Liste compacte "N x TYPE DE PAIN"
+        // Liste compacte "TYPE + POIDS × QUANTITÉ"
         const recapList = Object.keys(recap)
             .sort((a,b)=> a.localeCompare(b,'fr',{sensitivity:'base'}))
             .map(label => {
                 const r = recap[label];
-                return `${r.qty} × ${label}`;
+                return `${label} × ${r.qty}`;
             });
         const recapBlock = {
             margin:[0,20,0,0],
