@@ -49,15 +49,35 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.innerHTML = '';
             data.products.forEach(p => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = \`
-                    <td>\${escapeHtml(p.name)}</td>
-                    <td>€\${Number(p.price).toFixed(2)}</td>
-                    <td>\${Number(p.unitWeight).toFixed(3)} kg</td>
-                    <td><span class="badge \${p.active ? 'bg-success' : 'bg-secondary'}">\${p.active ? 'Actif' : 'Inactif'}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary me-2" data-action="edit" data-id="\${p.id}">Éditer</button>
-                        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="\${p.id}">Supprimer</button>
-                    </td>\`;
+                const tdName = document.createElement('td');
+                tdName.textContent = String(p.name || '');
+                const tdPrice = document.createElement('td');
+                tdPrice.textContent = '€' + Number(p.price).toFixed(2);
+                const tdWeight = document.createElement('td');
+                tdWeight.textContent = Number(p.unitWeight).toFixed(3) + ' kg';
+                const tdActive = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'badge ' + (p.active ? 'bg-success' : 'bg-secondary');
+                badge.textContent = p.active ? 'Actif' : 'Inactif';
+                tdActive.appendChild(badge);
+                const tdActions = document.createElement('td');
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'btn btn-sm btn-outline-primary me-2';
+                btnEdit.setAttribute('data-action', 'edit');
+                btnEdit.setAttribute('data-id', String(p.id));
+                btnEdit.textContent = 'Éditer';
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn btn-sm btn-outline-danger';
+                btnDelete.setAttribute('data-action', 'delete');
+                btnDelete.setAttribute('data-id', String(p.id));
+                btnDelete.textContent = 'Supprimer';
+                tdActions.appendChild(btnEdit);
+                tdActions.appendChild(btnDelete);
+                tr.appendChild(tdName);
+                tr.appendChild(tdPrice);
+                tr.appendChild(tdWeight);
+                tr.appendChild(tdActive);
+                tr.appendChild(tdActions);
                 tbody.appendChild(tr);
             });
 
@@ -67,8 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const action = e.currentTarget.getAttribute('data-action');
                     const prod = data.products.find(x => x.id === id);
                     if (action === 'delete') {
-                        if (!confirm(\`Supprimer le produit "\${prod?.name}" ?\`)) return;
-                        const r = await fetch(\`/api/products?id=\${id}\`, { method: 'DELETE' });
+                        if (!confirm(`Supprimer le produit "${prod?.name}" ?`)) return;
+                        const r = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
                         const j = await r.json();
                         if (j.ok) {
                             showToast('Produit supprimé', 'Succès');
@@ -83,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const unitWeight = Number(prompt('Poids unitaire (kg)', String(prod?.unitWeight ?? '')));
                         if (Number.isNaN(unitWeight)) return alert('Poids invalide');
                         const active = confirm('Produit actif ? OK=Actif, Annuler=Inactif');
-                        const r = await fetch(\`/api/products?id=\${id}\`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, unitWeight, active }) });
+                        const r = await fetch(`/api/products?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, unitWeight, active }) });
                         const j = await r.json();
                         if (j.ok) {
                             showToast('Produit mis à jour', 'Succès');
@@ -712,6 +732,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const list = currentSeasonFilter === 'all' ? currentOrders : currentOrders.filter(o => (o.seasonId || '') === currentSeasonFilter);
         const NAME_PRICES = window.NAME_PRICES || {};
         const NAME_WEIGHTS = window.NAME_WEIGHTS || {};
+        const productsByName = {};
+        try {
+            (window.ADMIN_PRODUCTS || []).forEach(p => { productsByName[String(p.name||'').trim().toLowerCase()] = p; });
+        } catch(e) {}
         const seasonName = (currentSeasons.find(s => s.id === currentSeasonFilter) || {}).name || (currentSeasonFilter === 'all' ? 'Toutes les saisons' : 'Saison');
         const sorted = [...list].sort((a,b)=> String(a.name||'').localeCompare(String(b.name||'')));
         let grandTotalPrice = 0, grandTotalWeight = 0;
@@ -728,11 +752,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ]];
             (o.items || []).forEach(it => {
                 const priceFromMap = resolveMap(NAME_PRICES, it.name);
-                const unit = Number(priceFromMap !== undefined ? priceFromMap : (it.price || 0));
+                let unit = Number(priceFromMap !== undefined ? priceFromMap : (it.price || 0));
+                if (!unit) {
+                    const p = productsByName[String(it.name||'').trim().toLowerCase()];
+                    unit = p ? Number(p.price)||0 : 0;
+                }
                 // Priorité au poids fourni par la commande, sinon mapping
                 const weightFromItem = (typeof it.unitWeight === 'number') ? it.unitWeight : undefined;
                 const weightFromMap = resolveMap(NAME_WEIGHTS, it.name);
-                const wkg = Number(weightFromItem !== undefined ? weightFromItem : (weightFromMap || 0));
+                let wkg = Number(weightFromItem !== undefined ? weightFromItem : (weightFromMap || 0));
+                if (!wkg) {
+                    const p = productsByName[String(it.name||'').trim().toLowerCase()];
+                    wkg = p ? Number(p.unitWeight)||0 : 0;
+                }
                 const qty = Number(it.quantity)||0;
                 const linePrice = unit * qty;
                 const lineWeight = wkg * qty;
