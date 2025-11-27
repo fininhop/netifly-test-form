@@ -40,14 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortSelect = document.getElementById('sortSelect');
     
         // Produits: chargement et CRUD
+        let currentProducts = [];
         async function loadProducts() {
             const resp = await fetch('/api/products');
             const data = await resp.json();
             if (!data.ok) return;
+            currentProducts = data.products || [];
             const tbody = document.querySelector('#productsTable tbody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            data.products.forEach(p => {
+            currentProducts.forEach(p => {
                 const tr = document.createElement('tr');
                 const tdName = document.createElement('td');
                 tdName.textContent = String(p.name || '');
@@ -85,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async (e) => {
                     const id = e.currentTarget.getAttribute('data-id');
                     const action = e.currentTarget.getAttribute('data-action');
-                    const prod = data.products.find(x => x.id === id);
+                    const prod = currentProducts.find(x => x.id === id);
                     const token = localStorage.getItem('adminToken');
                     if (action === 'delete') {
                         if (!confirm(`Supprimer le produit "${prod?.name}" ?`)) return;
@@ -97,19 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else showToast(j.error || 'Erreur', 'Erreur');
                     }
                     if (action === 'edit') {
-                        const name = prompt('Nom du produit', prod?.name || '');
-                        if (name == null) return;
-                        const price = Number(prompt('Prix (€)', String(prod?.price ?? '')));
-                        if (Number.isNaN(price)) return alert('Prix invalide');
-                        const unitWeight = Number(prompt('Poids unitaire (kg)', String(prod?.unitWeight ?? '')));
-                        if (Number.isNaN(unitWeight)) return alert('Poids invalide');
-                        const active = confirm('Produit actif ? OK=Actif, Annuler=Inactif');
-                        const r = await fetch(`/api/products?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ name, price, unitWeight, active }) });
-                        const j = await r.json();
-                        if (j.ok) {
-                            showToast('Produit mis à jour', 'Succès');
-                            loadProducts();
-                        } else showToast(j.error || 'Erreur', 'Erreur');
+                        openProductModal(prod);
                     }
                 });
             });
@@ -134,6 +124,65 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Produit ajouté', 'Succès');
                     loadProducts();
                 } else showToast(j.error || 'Erreur', 'Erreur');
+            });
+        }
+
+        // Modal édition produit
+        const productModalEl = document.getElementById('productModal');
+        const productIdInput = document.getElementById('productId');
+        const productNameInput = document.getElementById('productName');
+        const productPriceInput = document.getElementById('productPrice');
+        const productUnitWeightInput = document.getElementById('productUnitWeight');
+        const productActiveInput = document.getElementById('productActive');
+        const saveProductBtn = document.getElementById('saveProductBtn');
+        let productModal = null;
+        if (productModalEl && window.bootstrap) {
+            productModal = new bootstrap.Modal(productModalEl);
+        }
+
+        function openProductModal(prod) {
+            if (!productModal && window.bootstrap && productModalEl) {
+                productModal = new bootstrap.Modal(productModalEl);
+            }
+            if (!productModal) { showToast('Erreur', 'Le module modal n\'est pas chargé', 'error'); return; }
+            productIdInput.value = prod && prod.id ? String(prod.id) : '';
+            productNameInput.value = prod && prod.name ? String(prod.name) : '';
+            productPriceInput.value = prod && typeof prod.price === 'number' ? String(prod.price) : '';
+            productUnitWeightInput.value = prod && typeof prod.unitWeight === 'number' ? String(prod.unitWeight) : '';
+            productActiveInput.checked = !!(prod && prod.active !== false);
+            productModal.show();
+        }
+
+        if (saveProductBtn) {
+            saveProductBtn.addEventListener('click', async () => {
+                const id = productIdInput.value.trim();
+                const name = productNameInput.value.trim();
+                const price = Number(productPriceInput.value);
+                const unitWeight = Number(productUnitWeightInput.value);
+                const active = !!productActiveInput.checked;
+                if (!name || Number.isNaN(price) || Number.isNaN(unitWeight)) {
+                    showToast('Champs requis', 'Vérifiez nom, prix et poids', 'warning');
+                    return;
+                }
+                const token = localStorage.getItem('adminToken');
+                try {
+                    const resp = await fetch('/api/products?id=' + encodeURIComponent(id), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+                        body: JSON.stringify({ name, price, unitWeight, active })
+                    });
+                    const j = await resp.json();
+                    if (resp.ok && j && j.ok) {
+                        showToast('Succès', 'Produit mis à jour', 'success');
+                        if (productModal) productModal.hide();
+                        loadProducts();
+                    } else {
+                        showToast('Erreur', (j && j.error) ? j.error : 'Échec de mise à jour', 'error');
+                    }
+                } catch (err) {
+                    console.error('Erreur update produit:', err);
+                    showToast('Erreur réseau', 'Réessayez', 'error');
+                }
             });
         }
 
