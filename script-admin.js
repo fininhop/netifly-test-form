@@ -547,11 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Export PDF for selected season/week
+    // Export PDF for selected season/week (pdfmake)
     if (exportSeasonPdfBtn) {
         exportSeasonPdfBtn.addEventListener('click', () => {
             try {
-                exportSeasonPdf();
+                exportSeasonPdfMake();
             } catch (e) {
                 console.error('Erreur export PDF:', e);
                 showToast('❌ Erreur', 'Export PDF impossible', 'error');
@@ -580,98 +580,78 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const id = (seasonIdInput.value || '').trim();
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `/api/seasons?seasonId=${encodeURIComponent(id)}` : '/api/seasons';
-
-            try {
-                const resp = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-                    body: JSON.stringify(payload)
-                });
-                const jr = await resp.json().catch(() => null);
-                if (resp.ok) {
-                    showToast('✅ Succès', id ? 'Saison mise à jour' : 'Saison créée', 'success');
-                    seasonModal.hide();
-                    fetchSeasons(token);
-                } else {
-                    showToast('❌ Erreur', (jr && jr.message) ? jr.message : 'Échec enregistrement saison', 'error');
+            function exportSeasonPdfMake() {
+                const list = currentSeasonFilter === 'all' ? currentOrders : currentOrders.filter(o => (o.seasonId || '') === currentSeasonFilter);
+                const NAME_PRICES = window.NAME_PRICES || {};
+                // weight parsing from item name
+                function parseWeightKg(name) {
+                    const n = String(name || '').toLowerCase();
+                    const kgMatch = n.match(/(\d+(?:[\.,]\d+)?)\s*kg/);
+                    if (kgMatch) { const v = parseFloat(kgMatch[1].replace(',', '.')); return isNaN(v) ? 0 : v; }
+                    const gMatch = n.match(/(\d+)\s*g/);
+                    if (gMatch) { const v = parseFloat(gMatch[1]); return isNaN(v) ? 0 : (v / 1000); }
+                    return 0;
                 }
-            } catch (err) {
-                console.error('Erreur save saison:', err);
-                showToast('❌ Erreur réseau', 'Impossible d’enregistrer la saison', 'error');
+                let grandTotalPrice = 0, grandTotalWeight = 0;
+                const sections = [];
+                list.forEach(o => {
+                    let subTotalPrice = 0, subTotalWeight = 0;
+                    const body = [[
+                        { text: 'Article', bold: true },
+                        { text: 'Quantité', bold: true },
+                        { text: 'Prix Unitaire', bold: true },
+                        { text: 'Poids (kg)', bold: true },
+                        { text: 'Total (€)', bold: true },
+                        { text: 'Total Poids (kg)', bold: true }
+                    ]];
+                    (o.items || []).forEach(it => {
+                        const unit = Number(NAME_PRICES[it.name] || it.price || 0);
+                        const wkg = parseWeightKg(it.name);
+                        const qty = Number(it.quantity)||0;
+                        const linePrice = unit * qty;
+                        const lineWeight = wkg * qty;
+                        subTotalPrice += linePrice;
+                        subTotalWeight += lineWeight;
+                        body.push([
+                            it.name || '',
+                            String(qty),
+                            unit ? `€${unit.toFixed(2)}` : '-',
+                            wkg ? wkg.toFixed(3) : '-',
+                            `€${linePrice.toFixed(2)}`,
+                            lineWeight ? lineWeight.toFixed(3) : '0.000'
+                        ]);
+                    });
+                    grandTotalPrice += subTotalPrice;
+                    grandTotalWeight += subTotalWeight;
+                    sections.push({
+                        margin: [0, 10, 0, 10],
+                        stack: [
+                            { text: `${o.name} • ${o.phone || ''} • ${o.email || ''}`, style: 'clientHeader' },
+                            { table: { headerRows: 1, widths: ['*', 'auto', 'auto', 'auto', 'auto', 'auto'], body } },
+                            { text: `Sous-total prix: €${subTotalPrice.toFixed(2)} • Sous-total poids: ${subTotalWeight.toFixed(3)} kg`, style: 'subtotals' }
+                        ]
+                    });
+                });
+                const docDefinition = {
+                    content: [
+                        { text: `Total montant: €${grandTotalPrice.toFixed(2)}`, style: 'totals' },
+                        { text: `Total poids: ${grandTotalWeight.toFixed(3)} kg`, style: 'totals' },
+                        { text: ' ', margin: [0, 4, 0, 8] },
+                        ...sections
+                    ],
+                    styles: {
+                        totals: { fontSize: 14, bold: true },
+                        clientHeader: { fontSize: 12, bold: true, margin: [0, 0, 0, 6] },
+                        subtotals: { fontSize: 11, italics: true, margin: [0, 6, 0, 0] }
+                    },
+                    defaultStyle: { fontSize: 10 }
+                };
+                if (window.pdfMake && window.pdfMake.createPdf) {
+                    window.pdfMake.createPdf(docDefinition).download('commandes.pdf');
+                } else {
+                    showToast('❌ Erreur', 'pdfmake non chargé', 'error');
+                }
             }
-        });
-    }
-
-    function openSeasonModal(season) {
-        if (!seasonModal) return;
-        // Reset form
-        if (seasonForm) seasonForm.reset();
-        seasonIdInput.value = season && season.id ? season.id : '';
-        seasonNameInput.value = season && season.name ? season.name : '';
-        seasonStartInput.value = season && season.startDate ? new Date(season.startDate).toISOString().slice(0,10) : '';
-        seasonEndInput.value = season && season.endDate ? new Date(season.endDate).toISOString().slice(0,10) : '';
-        seasonDescInput.value = season && season.description ? season.description : '';
-
-        const title = document.getElementById('seasonModalLabel');
-        if (title) title.textContent = season ? 'Éditer la saison' : 'Nouvelle saison';
-        seasonModal.show();
-    }
-
-    function exportSeasonPdf() {
-        const list = currentSeasonFilter === 'all' ? currentOrders : currentOrders.filter(o => (o.seasonId || '') === currentSeasonFilter);
-        const seasonObj = currentSeasons.find(s => s.id === currentSeasonFilter);
-        const seasonName = (seasonObj?.name) || (currentSeasonFilter === 'all' ? 'Toutes les saisons' : currentSeasonFilter);
-        const seasonStartStr = seasonObj && seasonObj.startDate ? new Date(seasonObj.startDate).toLocaleDateString('fr-FR') : null;
-        const seasonEndStr = seasonObj && seasonObj.endDate ? new Date(seasonObj.endDate).toLocaleDateString('fr-FR') : null;
-        const totalSum = list.reduce((s,o)=> s + computeOrderTotal(o), 0);
-        // Poids total (kg) pour tous les articles
-        function parseWeightKg(name) {
-            const n = String(name || '').toLowerCase();
-            const kgMatch = n.match(/(\d+(?:[\.,]\d+)?)\s*kg/);
-            if (kgMatch) { const v = parseFloat(kgMatch[1].replace(',', '.')); return isNaN(v) ? 0 : v; }
-            const gMatch = n.match(/(\d+)\s*g/);
-            if (gMatch) { const v = parseFloat(gMatch[1]); return isNaN(v) ? 0 : (v / 1000); }
-            return 0;
-        }
-        function computeOrderWeightKg(order) {
-            const items = Array.isArray(order.items) ? order.items : [];
-            return items.reduce((w, it) => w + (parseWeightKg(it.name) * (Number(it.quantity || 0))), 0);
-        }
-        const totalWeightKg = list.reduce((w,o)=> w + computeOrderWeightKg(o), 0);
-
-        // jsPDF
-        const { jsPDF } = window.jspdf || {};
-        if (!jsPDF) { throw new Error('jsPDF non chargé'); }
-        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-
-        const left = 40, topStart = 64; let y = topStart;
-        // En-tête stylisée
-        doc.setFillColor(245, 245, 245);
-        doc.rect(left - 20, y - 34, 540, 56, 'F');
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-        doc.text(`Rapport commandes – ${seasonName}`, left, y);
-        // Ligne de contexte (date de génération)
-        const genDate = new Date().toLocaleString('fr-FR');
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-        doc.text(`Généré le ${genDate}` , left + 360, y);
-        y += 18;
-        if (seasonStartStr && seasonEndStr) {
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-            doc.text(`Semaine: du ${seasonStartStr} au ${seasonEndStr}`, left, y);
-            y += 20;
-        } else {
-            y += 10;
-        }
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-        doc.text(`Total commandes: ${list.length}`, left, y); y += 16;
-        doc.text(`Montant total: €${totalSum.toFixed(2)}`, left, y); y += 16;
-        doc.text(`Poids total: ${totalWeightKg.toFixed(2)} kg`, left, y); y += 24;
-
-        // En-tête de table commandes (fond léger)
-        doc.setFillColor(235, 239, 242);
-        doc.rect(left - 6, y - 14, 520, 26, 'F');
         doc.setFont('helvetica', 'bold');
         doc.text('Nom / Contact', left, y);
         doc.text('Total (€)', left + 420, y);

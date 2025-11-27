@@ -69,14 +69,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         container.innerHTML = '';
+        const NAME_PRICES = window.NAME_PRICES || {};
         orders.forEach(o => {
             const card = document.createElement('div');
             card.className = 'order-card';
             const dateCmd = o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
             
-            const itemsHtml = (o.items || []).map(it => 
-                `<div class="item-row"><span>${it.quantity} × ${it.name}</span><span class="text-muted">${it.price ? '€ '+it.price.toFixed(2) : ''}</span></div>`
-            ).join('');
+            const itemsHtml = (o.items || []).map(it => {
+                const unit = Number(NAME_PRICES[it.name] || it.price || 0);
+                const qty = Number(it.quantity) || 0;
+                const line = unit * qty;
+                return `<div class="item-row"><span>${qty} × ${it.name}</span><span class="text-muted">${unit ? `€${unit.toFixed(2)}` : '€0.00'} /u • ${line ? `€${line.toFixed(2)}` : '€0.00'}</span></div>`;
+            }).join('');
+            const total = (o.items || []).reduce((s, it) => s + ((Number(NAME_PRICES[it.name] || it.price || 0)) * (Number(it.quantity)||0)), 0);
             
             card.innerHTML = `
                 <div class="order-header">
@@ -92,6 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="items-section">
                     <div class="items-title">🛍️ Articles commandés</div>
                     ${itemsHtml}
+                    <div class="text-end"><strong>Total:</strong> €${total.toFixed(2)}</div>
                 </div>
             `;
             container.appendChild(card);
