@@ -701,7 +701,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     y += lineHeight - 2;
                 });
                 doc.setFontSize(11);
-                y += 6;
+                // Sous-total de la commande
+                const orderTotal = computeOrderTotal(o);
+                if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Sous-total commande: €${orderTotal.toFixed(2)}`, itemLeft, y);
+                doc.setFont('helvetica', 'normal');
+                y += 10;
             }
         });
 
