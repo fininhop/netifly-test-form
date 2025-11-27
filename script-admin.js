@@ -334,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSeasons = [];
     let currentSeasonFilter = 'all';
     const exportSeasonPdfBtn = document.getElementById('exportSeasonPdf');
+    const cleanupRenouvelerBtn = document.getElementById('cleanupRenouveler');
 
     // Fonctions de gestion des saisons
     async function fetchSeasons(token) {
@@ -556,6 +557,33 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error('Erreur export PDF:', e);
                 showToast('❌ Erreur', 'Export PDF impossible', 'error');
+            }
+        });
+    }
+
+    // Nettoyage du champ 'renouveler' dans la base
+    if (cleanupRenouvelerBtn) {
+        cleanupRenouvelerBtn.addEventListener('click', async () => {
+            if (!confirm('Supprimer le champ obsolète “renouveler” de toutes les commandes ?')) return;
+            const t = localStorage.getItem('adminToken');
+            if (!t) { showToast('❌ Erreur', 'Token admin manquant', 'error'); return; }
+            showPageLoader('Nettoyage en cours…');
+            try {
+                const resp = await fetch('/api/cleanup-renouveler', { method: 'POST', headers: { 'x-admin-token': t } });
+                const jr = await resp.json().catch(() => null);
+                if (resp.ok) {
+                    const count = (jr && jr.removedCount) ? jr.removedCount : 0;
+                    showToast('✅ Nettoyage effectué', `Champs retirés: ${count}`, 'success');
+                    // Rafraîchir les commandes
+                    await fetchAdminOrders(t);
+                } else {
+                    showToast('❌ Erreur', (jr && jr.message) ? jr.message : 'Échec du nettoyage', 'error');
+                }
+            } catch (e) {
+                console.error('Erreur cleanup:', e);
+                showToast('❌ Erreur réseau', 'Impossible de nettoyer', 'error');
+            } finally {
+                hidePageLoader();
             }
         });
     }
