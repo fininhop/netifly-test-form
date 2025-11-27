@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { user = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) { user = null; }
   }
   if (!user) {
-    alert('Utilisateur non connecté.');
+    showMessageModal('Session', 'Utilisateur non connecté.', 'warning');
     window.location.href = 'index.html';
     return;
   }
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name: nameInput.value.trim(),
       phone: phoneInput.value.trim()
     };
-    if (!payload.userId) { alert('Identifiant utilisateur manquant'); return; }
+    if (!payload.userId) { showMessageModal('Erreur', 'Identifiant utilisateur manquant', 'error'); return; }
     try {
       const resp = await fetch('/api/update-user', {
         method: 'POST',
@@ -51,19 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const jr = await resp.json().catch(() => null);
       if (resp.ok) {
         updateStoredUser({ name: payload.name, phone: payload.phone });
-        alert('Profil mis à jour');
+        showMessageModal('Succès', 'Profil mis à jour', 'success');
       } else {
-        alert(jr && jr.message ? jr.message : 'Erreur mise à jour du profil');
+        showMessageModal('Erreur', jr && jr.message ? jr.message : 'Erreur mise à jour du profil', 'error');
       }
     } catch (err) {
-      alert('Erreur réseau');
+      showMessageModal('Erreur réseau', 'Veuillez réessayer.', 'error');
     }
   });
 
   deleteBtn.addEventListener('click', async () => {
     if (!confirm('Confirmez la suppression de votre compte ?')) return;
     const userId = user.userId || user.id;
-    if (!userId) { alert('Identifiant utilisateur manquant'); return; }
+    if (!userId) { showMessageModal('Erreur', 'Identifiant utilisateur manquant', 'error'); return; }
     try {
       const resp = await fetch('/api/delete-user', {
         method: 'POST',
@@ -74,13 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resp.ok) {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('user');
-        alert('Compte supprimé');
+        showMessageModal('Compte supprimé', 'Votre compte a été supprimé.', 'success');
         window.location.href = 'index.html';
       } else {
-        alert(jr && jr.message ? jr.message : 'Erreur suppression du compte');
+        showMessageModal('Erreur', jr && jr.message ? jr.message : 'Erreur suppression du compte', 'error');
       }
     } catch (err) {
-      alert('Erreur réseau');
+      showMessageModal('Erreur réseau', 'Veuillez réessayer.', 'error');
     }
   });
 
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     passwordFeedback.textContent = '';
     const userId = user.userId || user.id;
-    if (!userId) { alert('Identifiant utilisateur manquant'); return; }
+    if (!userId) { showMessageModal('Erreur', 'Identifiant utilisateur manquant', 'error'); return; }
     const currentPassword = currentPwdInput.value;
     const newPassword = newPwdInput.value;
     const confirmPassword = confirmPwdInput.value;

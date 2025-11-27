@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const price = Number(document.getElementById('prodPrice').value);
                 const unitWeight = Number(document.getElementById('prodUnitWeight').value);
                 if (!name || Number.isNaN(price) || Number.isNaN(unitWeight)) {
-                    return alert('Veuillez renseigner correctement les champs');
+                    return showMessageModal('Champs requis', 'Veuillez renseigner correctement les champs.', 'warning');
                 }
                 const token = localStorage.getItem('adminToken');
                 const resp = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ name, price, unitWeight, active: true }) });
