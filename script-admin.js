@@ -653,9 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFont('helvetica', 'bold');
         doc.text('Nom', left, y);
         doc.text('Total (€)', left + 420, y);
-        y += 14;
-        doc.setLineWidth(0.5); doc.line(left, y, left + 520, y);
-        y += 10;
+        y += 12;
         doc.setFont('helvetica', 'normal');
 
         const lineHeight = 14; const pageHeight = doc.internal.pageSize.getHeight();
@@ -684,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 doc.text('Quantité', itemLeft + 250, y);
                 doc.text('Prix Unitaire', itemLeft + 300, y);
                 doc.text('Total (€)', itemLeft + 380, y);
-                y += 10; doc.setLineWidth(0.3); doc.line(itemLeft, y, itemLeft + 440, y);
+                y += 8;
                 doc.setFont('helvetica', 'normal');
                 // Colonnes: Article, Qté, Prix unit., Total
                 doc.setFontSize(10);
@@ -713,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Footer total
         if (y + 24 > pageHeight - 40) { doc.addPage(); y = topStart; }
-        y += 10; doc.setLineWidth(0.5); doc.line(left, y, left + 520, y); y += 18;
+        y += 16;
         doc.setFont('helvetica', 'bold');
         doc.text(`Total général: €${totalSum.toFixed(2)}`, left, y);
 
@@ -743,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.text('Article', left, y);
             doc.text('Quantité', left + 250, y);
             doc.text('Montant (€)', left + 380, y);
-            y += 10; doc.setLineWidth(0.3); doc.line(left, y, left + 520, y);
+            y += 8;
             doc.setFont('helvetica', 'normal');
             const rows = Array.from(aggregate.entries()).sort((a,b) => String(a[0]).localeCompare(String(b[0])));
             rows.forEach(([name, data]) => {
