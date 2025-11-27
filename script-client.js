@@ -333,13 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
             date: selectedSeason.endDate, // Utiliser la date de fin de saison comme date de livraison
             items: items,
             userId: currentUser.userId || currentUser.id || null,
-            address: {
-                line1: document.getElementById('addr_line1')?.value || '',
-                line2: document.getElementById('addr_line2')?.value || '',
-                postalCode: document.getElementById('addr_postal')?.value || '',
-                city: document.getElementById('addr_city')?.value || '',
-                department: document.getElementById('addr_dept')?.value || ''
-            }
+            // Pas d'adresse de livraison/retrait sur la page de commande
         };
 
         // 3. Envoi à l'API Vercel
