@@ -628,6 +628,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const seasonStartStr = seasonObj && seasonObj.startDate ? new Date(seasonObj.startDate).toLocaleDateString('fr-FR') : null;
         const seasonEndStr = seasonObj && seasonObj.endDate ? new Date(seasonObj.endDate).toLocaleDateString('fr-FR') : null;
         const totalSum = list.reduce((s,o)=> s + computeOrderTotal(o), 0);
+        // Poids total (kg) pour tous les articles
+        function parseWeightKg(name) {
+            const n = String(name || '').toLowerCase();
+            const kgMatch = n.match(/(\d+(?:[\.,]\d+)?)\s*kg/);
+            if (kgMatch) { const v = parseFloat(kgMatch[1].replace(',', '.')); return isNaN(v) ? 0 : v; }
+            const gMatch = n.match(/(\d+)\s*g/);
+            if (gMatch) { const v = parseFloat(gMatch[1]); return isNaN(v) ? 0 : (v / 1000); }
+            return 0;
+        }
+        function computeOrderWeightKg(order) {
+            const items = Array.isArray(order.items) ? order.items : [];
+            return items.reduce((w, it) => w + (parseWeightKg(it.name) * (Number(it.quantity || 0))), 0);
+        }
+        const totalWeightKg = list.reduce((w,o)=> w + computeOrderWeightKg(o), 0);
 
         // jsPDF
         const { jsPDF } = window.jspdf || {};
@@ -653,14 +667,15 @@ document.addEventListener('DOMContentLoaded', () => {
             y += 10;
         }
         doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-        doc.text(`Total commandes: ${list.length}`, left, y); y += 18;
-        doc.text(`Total prix: €${totalSum.toFixed(2)}`, left, y); y += 24;
+        doc.text(`Total commandes: ${list.length}`, left, y); y += 16;
+        doc.text(`Montant total: €${totalSum.toFixed(2)}`, left, y); y += 16;
+        doc.text(`Poids total: ${totalWeightKg.toFixed(2)} kg`, left, y); y += 24;
 
         // En-tête de table commandes (fond léger)
         doc.setFillColor(235, 239, 242);
         doc.rect(left - 6, y - 14, 520, 26, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.text('Nom', left, y);
+        doc.text('Nom / Contact', left, y);
         doc.text('Total (€)', left + 420, y);
         y += 16;
         // Petite marge après l'en-tête pour éviter la collision visuelle
@@ -671,6 +686,8 @@ document.addEventListener('DOMContentLoaded', () => {
         list.forEach(o => {
             const name = o.name || '—';
             const total = computeOrderTotal(o).toFixed(2);
+            const email = o.email || '—';
+            const phone = o.phone || '—';
 
             if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
             // Lignes zébrées pour lisibilité
@@ -678,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 doc.setFillColor(252, 252, 252);
                 doc.rect(left - 6, y - (lineHeight - 6), 520, lineHeight + 2, 'F');
             }
-            doc.text(String(name), left, y);
+            doc.text(`${String(name)}  |  ${String(phone)}  |  ${String(email)}`, left, y);
             doc.text(`€${total}`, left + 420, y);
             y += lineHeight;
             y += 2;
@@ -700,12 +717,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 y += lineHeight - 8;
                 // Séparation visuelle après le label
                 y += 2;
-                // En-tête colonnes: Article | Quantité | Prix Unitaire | Total (€)
+                // En-tête colonnes: Article | Quantité | Prix Unitaire | Poids (kg) | Total (€)
                 doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
                 doc.text('Article', itemLeft, y);
                 doc.text('Quantité', itemLeft + 250, y);
                 doc.text('Prix Unitaire', itemLeft + 300, y);
-                doc.text('Total (€)', itemLeft + 380, y);
+                doc.text('Poids (kg)', itemLeft + 380, y);
+                doc.text('Total (€)', itemLeft + 450, y);
                 y += 10;
                 doc.setFont('helvetica', 'normal');
                 // Colonnes: Article, Qté, Prix unit., Total
@@ -715,16 +733,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const qty = Number(it.quantity || 0);
                     const unit = (typeof it.price === 'number') ? it.price : (NAME_PRICES[itName] || 0);
                     const lineTotal = (unit * qty).toFixed(2);
+                    const weightKg = parseWeightKg(itName) * qty;
                     if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
                     // zebra pour items
                     if (((y - topStart) / lineHeight) % 2 < 1) {
                         doc.setFillColor(253, 253, 253);
-                        doc.rect(itemLeft - 6, y - (lineHeight - 6), 440, lineHeight + 2, 'F');
+                        doc.rect(itemLeft - 6, y - (lineHeight - 6), 500, lineHeight + 2, 'F');
                     }
                     doc.text(itName, itemLeft, y);
                     doc.text(String(qty), itemLeft + 250, y);
                     doc.text(`€${unit.toFixed(2)}`, itemLeft + 300, y);
-                    doc.text(`€${lineTotal}`, itemLeft + 380, y);
+                    doc.text(`${weightKg.toFixed(2)}`, itemLeft + 380, y);
+                    doc.text(`€${lineTotal}`, itemLeft + 450, y);
                     y += lineHeight;
                     y += 1;
                 });
@@ -732,9 +752,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Sous-total de la commande (avec marge au-dessus)
                 y += 4;
                 const orderTotal = computeOrderTotal(o);
+                const orderWeight = computeOrderWeightKg(o);
                 if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
                 doc.setFont('helvetica', 'bold');
-                doc.text(`Sous-total commande: €${orderTotal.toFixed(2)}`, itemLeft, y);
+                doc.text(`Sous-total commande: €${orderTotal.toFixed(2)} | Poids: ${orderWeight.toFixed(2)} kg`, itemLeft, y);
                 doc.setFont('helvetica', 'normal');
                 y += 14;
             }
