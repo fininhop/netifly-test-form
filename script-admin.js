@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             html += `
                 <div class="col-12 col-md-6 col-lg-4">
-                    <div class="order-card" data-order-id="${o.id}" data-order-date="${o.date || ''}" data-order-ren="${rn}">
+                    <div class="order-card" data-order-id="${o.id}" data-order-date="${o.date || ''}">
                         <div class="order-header">
                             <h6 class="order-title">👤 ${o.name} ${o.seasonName ? `<span class='badge bg-info ms-1'>${o.seasonName}</span>` : ''}</h6>
                             <p class="order-date">📅 ${dateCmd} &nbsp; <strong>Total: €${orderTotal.toFixed(2)}</strong></p>
