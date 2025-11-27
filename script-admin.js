@@ -658,11 +658,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // En-tête de table commandes (fond léger)
         doc.setFillColor(235, 239, 242);
-        doc.rect(left - 6, y - 12, 520, 24, 'F');
+        doc.rect(left - 6, y - 14, 520, 26, 'F');
         doc.setFont('helvetica', 'bold');
         doc.text('Nom', left, y);
         doc.text('Total (€)', left + 420, y);
         y += 16;
+        // Petite marge après l'en-tête pour éviter la collision visuelle
+        y += 4;
         doc.setFont('helvetica', 'normal');
 
         const lineHeight = 18; const pageHeight = doc.internal.pageSize.getHeight();
@@ -687,13 +689,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 // En-tête des items
                 const itemLeft = left + 12;
                 if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
+                // Espace de séparation avant le bloc Détails
+                y += 4;
                 // Sous-en-tête détails
                 doc.setFillColor(245, 245, 245);
-                doc.rect(itemLeft - 6, y - 12, 440, 22, 'F');
+                doc.rect(itemLeft - 6, y - 12, 440, 24, 'F');
                 doc.setFont('helvetica', 'italic');
                 doc.text('Détails:', itemLeft, y);
                 doc.setFont('helvetica', 'normal');
                 y += lineHeight - 8;
+                // Séparation visuelle après le label
+                y += 2;
                 // En-tête colonnes: Article | Quantité | Prix Unitaire | Total (€)
                 doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
                 doc.text('Article', itemLeft, y);
@@ -723,7 +729,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     y += 1;
                 });
                 doc.setFontSize(11);
-                // Sous-total de la commande
+                // Sous-total de la commande (avec marge au-dessus)
+                y += 4;
                 const orderTotal = computeOrderTotal(o);
                 if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
                 doc.setFont('helvetica', 'bold');
@@ -759,7 +766,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (y + 40 > pageHeight - 40) { doc.addPage(); y = topStart; }
             y += 24;
             doc.setFillColor(235, 239, 242);
-            doc.rect(left - 6, y - 12, 520, 24, 'F');
+            // Marge de séparation avant récap global
+            y += 6;
+            doc.rect(left - 6, y - 12, 520, 26, 'F');
             doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
             doc.text('Récapitulatif global par article', left, y);
             y += 18;
