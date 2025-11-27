@@ -282,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
         const editOrderId = document.getElementById('editOrderId');
         const editDate = document.getElementById('editDate');
-        const editRen = null;
         const saveEditBtn = document.getElementById('saveEditBtn');
 
         ordersContainer.querySelectorAll('.btn-edit').forEach(btn => {
@@ -290,11 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = e.target.closest('.order-card');
                 const orderId = card && card.getAttribute('data-order-id');
                 const date = card && card.getAttribute('data-order-date');
-                const rn = null;
                 if (!orderId || !modal) return;
                 editOrderId.value = orderId;
                 editDate.value = (date || '');
-                    editRen.value = '';
                 modal.show();
             });
         });
