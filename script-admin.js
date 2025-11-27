@@ -86,9 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const id = e.currentTarget.getAttribute('data-id');
                     const action = e.currentTarget.getAttribute('data-action');
                     const prod = data.products.find(x => x.id === id);
+                    const token = localStorage.getItem('adminToken');
                     if (action === 'delete') {
                         if (!confirm(`Supprimer le produit "${prod?.name}" ?`)) return;
-                        const r = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+                        const r = await fetch(`/api/products?id=${id}`, { method: 'DELETE', headers: { 'x-admin-token': token } });
                         const j = await r.json();
                         if (j.ok) {
                             showToast('Produit supprimé', 'Succès');
@@ -103,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const unitWeight = Number(prompt('Poids unitaire (kg)', String(prod?.unitWeight ?? '')));
                         if (Number.isNaN(unitWeight)) return alert('Poids invalide');
                         const active = confirm('Produit actif ? OK=Actif, Annuler=Inactif');
-                        const r = await fetch(`/api/products?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, unitWeight, active }) });
+                        const r = await fetch(`/api/products?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ name, price, unitWeight, active }) });
                         const j = await r.json();
                         if (j.ok) {
                             showToast('Produit mis à jour', 'Succès');
@@ -125,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!name || Number.isNaN(price) || Number.isNaN(unitWeight)) {
                     return alert('Veuillez renseigner correctement les champs');
                 }
-                const resp = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, unitWeight, active: true }) });
+                const token = localStorage.getItem('adminToken');
+                const resp = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ name, price, unitWeight, active: true }) });
                 const j = await resp.json();
                 if (j.ok) {
                     form.reset();

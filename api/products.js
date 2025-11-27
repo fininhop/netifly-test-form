@@ -1,11 +1,24 @@
-const { getFirestore } = require('firebase-admin/firestore');
-const { initFirebase } = require('./verify-user.js');
+const admin = require('firebase-admin');
+
+if (!admin.apps.length) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    global.db = admin.firestore();
+  } catch (e) {
+    console.error('Erreur initialisation Admin SDK (products):', e.message);
+    global.adminInitError = e;
+  }
+} else {
+  global.db = admin.firestore();
+}
 
 module.exports = async function handler(req, res) {
   try {
-    initFirebase();
-    const db = getFirestore();
-    const col = db.collection('products');
+    if (global.adminInitError) {
+      return res.status(500).json({ ok: false, error: 'Erreur configuration serveur' });
+    }
+    const col = global.db.collection('products');
 
     if (req.method === 'GET') {
       const snap = await col.orderBy('name').get();
@@ -14,6 +27,11 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
+      const provided = req.headers['x-admin-token'] || req.query.adminToken || null;
+      const expected = process.env.ADMIN_TOKEN || null;
+      if (!expected || provided !== expected) {
+        return res.status(401).json({ ok: false, error: 'Accès administrateur requis' });
+      }
       const { name, price, unitWeight, active } = req.body || {};
       if (!name || typeof price !== 'number' || typeof unitWeight !== 'number') {
         return res.status(400).json({ ok: false, error: 'Champs requis: name, price(number), unitWeight(number)' });
@@ -31,6 +49,11 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
+      const provided = req.headers['x-admin-token'] || req.query.adminToken || null;
+      const expected = process.env.ADMIN_TOKEN || null;
+      if (!expected || provided !== expected) {
+        return res.status(401).json({ ok: false, error: 'Accès administrateur requis' });
+      }
       const id = req.query.id;
       if (!id) return res.status(400).json({ ok: false, error: 'Paramètre id manquant' });
       const { name, price, unitWeight, active } = req.body || {};
@@ -44,6 +67,11 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      const provided = req.headers['x-admin-token'] || req.query.adminToken || null;
+      const expected = process.env.ADMIN_TOKEN || null;
+      if (!expected || provided !== expected) {
+        return res.status(401).json({ ok: false, error: 'Accès administrateur requis' });
+      }
       const id = req.query.id;
       if (!id) return res.status(400).json({ ok: false, error: 'Paramètre id manquant' });
       await col.doc(id).delete();
