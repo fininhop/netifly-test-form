@@ -35,10 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminMessage = document.getElementById('adminMessage');
     const ordersTableContainer = document.getElementById('ordersTableContainer');
     const seasonFilterEl = document.getElementById('seasonFilter');
-    const tabsEl = null; // tabs replaced by accordion
-    const usersListEl = document.getElementById('usersList');
-    const userSearchEmailEl = document.getElementById('userSearchEmail');
+    const tabsEl = document.getElementById('gestionTabs');
+    const userSearchEmail = document.getElementById('userSearchEmail');
     const userSearchBtn = document.getElementById('userSearchBtn');
+    const usersAdminTbody = document.getElementById('usersAdminTbody');
+    const userSearchMessage = document.getElementById('userSearchMessage');
 
     function showMessage(text, type = '') {
         adminMessage.innerHTML = text ? `<span class="text-${type}">${text}</span>` : '';
@@ -261,70 +262,78 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredOrders = selectedSeason ? (allOrders || []).filter(o => (o.season||'') === selectedSeason) : (allOrders || []);
     }
 
-    function setupTabs() { /* no-op, using accordion */ }
+    function setupTabs() {
+        if (!tabsEl) return;
+        tabsEl.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                tabsEl.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                const target = link.getAttribute('data-target');
+                document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+                const el = document.querySelector(target);
+                if (el) el.classList.add('active');
+            });
+        });
+    }
 
     function isSmartphone() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
-        return /android|iphone|ipad|ipod|iemobile|mobile/i.test(ua);
+        return /android|iphone|ipad|ipod|mobile/i.test(ua);
     }
 
     async function searchUserByEmail(email) {
-        if (!email) { usersListEl.innerHTML = '<div class="alert alert-light">Entrer un email pour rechercher.</div>'; return; }
+        if (!email) return null;
         try {
-            showPageLoader('Recherche utilisateur…');
             const resp = await fetch('/api/find-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
             });
-            const result = await resp.json().catch(() => null);
-            if (!resp.ok) {
-                usersListEl.innerHTML = '<div class="alert alert-warning">Utilisateur introuvable.</div>';
-                return;
-            }
-            const user = result && (result.user || result);
-            if (!user) {
-                usersListEl.innerHTML = '<div class="alert alert-warning">Aucun utilisateur trouvé.</div>';
-                return;
-            }
-            const tel = (user.phone || '').replace(/\s+/g,'');
-            const canCall = isSmartphone() && tel;
-            const canSms = isSmartphone() && tel;
-            const mail = user.email || '';
-            let actions = `<a class="btn btn-sm btn-outline-primary me-2" href="mailto:${mail}">✉️ Email</a>`;
-            if (canCall) actions += `<a class="btn btn-sm btn-outline-success me-2" href="tel:${tel}">📞 Appeler</a>`;
-            if (canSms) actions += `<a class="btn btn-sm btn-outline-warning" href="sms:${tel}">📩 SMS</a>`;
+            const jr = await resp.json().catch(() => null);
+            if (resp.ok) return jr && jr.user ? jr.user : null;
+            return null;
+        } catch (e) { return null; }
+    }
 
-            usersListEl.innerHTML = `
-                <table class="table table-sm">
-                    <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td>${user.name || '—'}</td>
-                            <td>${mail || '—'}</td>
-                            <td>${tel || '—'}</td>
-                            <td>${actions}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
-        } catch (e) {
-            console.error('searchUser error', e);
-            usersListEl.innerHTML = '<div class="alert alert-danger">Erreur réseau.</div>';
-        } finally {
-            hidePageLoader();
-        }
+    function renderUserRow(user) {
+        const phone = user.phone || '';
+        const email = user.email || '';
+        const name = user.name || '';
+        const canCall = isSmartphone() && phone;
+        const canSms = isSmartphone() && phone;
+        const mailLink = email ? `mailto:${email}` : '#';
+        const callLink = canCall ? `tel:${phone}` : '#';
+        const smsLink = canSms ? `sms:${phone}` : '#';
+        const callBtn = `<a href="${callLink}" class="btn btn-sm btn-outline-primary ${canCall?'':'disabled'}" ${canCall?'':'aria-disabled="true"'}>📞 Appeler</a>`;
+        const smsBtn = `<a href="${smsLink}" class="btn btn-sm btn-outline-success ${canSms?'':'disabled'}" ${canSms?'':'aria-disabled="true"'}>💬 SMS</a>`;
+        const mailBtn = `<a href="${mailLink}" class="btn btn-sm btn-outline-secondary ${email?'':'disabled'}" ${email?'':'aria-disabled="true"'}>✉️ Mail</a>`;
+        return `<tr><td>${name}</td><td>${email}</td><td>${phone}</td><td class="d-flex gap-2 flex-wrap">${mailBtn}${callBtn}${smsBtn}</td></tr>`;
+    }
+
+    function setupUserAdmin() {
+        if (!userSearchBtn) return;
+        userSearchBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = (userSearchEmail && userSearchEmail.value || '').trim().toLowerCase();
+            if (!email) {
+                userSearchMessage.innerHTML = '<span class="text-danger">Veuillez entrer un email.</span>';
+                return;
+            }
+            userSearchMessage.innerHTML = '<span class="text-muted">Recherche…</span>';
+            const user = await searchUserByEmail(email);
+            if (user) {
+                usersAdminTbody.innerHTML = renderUserRow(user);
+                userSearchMessage.innerHTML = '<span class="text-success">Utilisateur trouvé.</span>';
+            } else {
+                usersAdminTbody.innerHTML = '<tr><td colspan="4" class="text-muted">Aucun utilisateur</td></tr>';
+                userSearchMessage.innerHTML = '<span class="text-warning">Aucun utilisateur pour cet email.</span>';
+            }
+        });
     }
 
     // Auto-login si token stocké
     setupTabs();
-    if (userSearchBtn && usersListEl) {
-        userSearchBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = (userSearchEmailEl && userSearchEmailEl.value || '').trim().toLowerCase();
-            searchUserByEmail(email);
-        });
-    }
+    setupUserAdmin();
     const storedToken = localStorage.getItem('adminToken');
     if (storedToken) {
         loginScreen.classList.add('d-none');

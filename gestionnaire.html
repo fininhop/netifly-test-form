@@ -97,6 +97,9 @@
                         <li class="nav-item">
                             <a class="nav-link" data-target="#section-saisons">🍂 Saisons</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-target="#section-users">👥 Administrer utilisateurs</a>
+                        </li>
                     </ul>
 
                     <!-- Sections -->
@@ -119,77 +122,52 @@
                                     </div>
                                     <div class="modal-body">
                                         <input type="hidden" id="editOrderId">
-                                        <div class="container py-4">
-                                            <div class="form-container mx-auto shadow-sm">
-                                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h1 class="mb-0">Espace Gestionnaire</h1>
-                                                    <div class="d-flex gap-2">
-                                                        <button id="refreshBtn" class="header-btn-outline">🔄 Actualiser</button>
-                                                        <button id="logoutAdmin" class="header-btn">Se déconnecter</button>
-                                                    </div>
-                                                </div>
-                                                <div id="adminLoginScreen" class="card p-3 mb-3">
-                                                    <form id="adminLoginForm" class="d-flex gap-2 align-items-center">
-                                                        <input id="adminTokenInput" type="password" class="form-control form-control-sm" placeholder="Token gestionnaire" />
-                                                        <button class="btn btn-sm btn-primary" type="submit">Se connecter</button>
-                                                    </form>
-                                                    <div id="loginError" class="text-danger small d-none mt-2"></div>
-                                                </div>
-                                                <div id="adminArea" class="d-none">
-                                                    <div id="adminMessage" class="mb-3"></div>
-                                                    <div class="accordion" id="gestionAccordion">
-                                                        <!-- Commandes -->
-                                                        <div class="accordion-item">
-                                                            <h2 class="accordion-header" id="headingOrders">
-                                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="true" aria-controls="collapseOrders">Commandes</button>
-                                                            </h2>
-                                                            <div id="collapseOrders" class="accordion-collapse collapse show" aria-labelledby="headingOrders" data-bs-parent="#gestionAccordion">
-                                                                <div class="accordion-body">
-                                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                        <div class="d-flex gap-2 align-items-center">
-                                                                            <span class="text-muted small">Filtrer par saison:</span>
-                                                                            <select id="seasonFilter" class="form-select form-select-sm" style="width:auto;"><option value="">Toutes</option></select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div id="ordersTableContainer"></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Saisons -->
-                                                        <div class="accordion-item">
-                                                            <h2 class="accordion-header" id="headingSeasons">
-                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeasons" aria-expanded="false" aria-controls="collapseSeasons">Gestion des Saisons</button>
-                                                            </h2>
-                                                            <div id="collapseSeasons" class="accordion-collapse collapse" aria-labelledby="headingSeasons" data-bs-parent="#gestionAccordion">
-                                                                <div class="accordion-body">
-                                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                        <h4 class="mb-0">🌸 Gestion des Saisons</h4>
-                                                                    </div>
-                                                                    <div id="seasonsList" class="mb-2"></div>
-                                                                    <div id="seasonsContainer" class=""></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Administrer utilisateurs -->
-                                                        <div class="accordion-item">
-                                                            <h2 class="accordion-header" id="headingUsers">
-                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUsers" aria-expanded="false" aria-controls="collapseUsers">Administrer utilisateurs</button>
-                                                            </h2>
-                                                            <div id="collapseUsers" class="accordion-collapse collapse" aria-labelledby="headingUsers" data-bs-parent="#gestionAccordion">
-                                                                <div class="accordion-body">
-                                                                    <div class="row g-2 mb-3">
-                                                                        <div class="col-12 col-md-6">
-                                                                            <input id="userSearchEmail" type="email" class="form-control form-control-sm" placeholder="Rechercher par email" />
-                                                                        </div>
-                                                                        <div class="col-12 col-md-3">
-                                                                            <button id="userSearchBtn" class="btn btn-sm btn-outline-primary w-100">🔎 Rechercher</button>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div id="usersList" class="table-responsive small"></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Date de retrait</label>
+                                            <input type="date" id="editDate" class="form-control">
                                         </div>
+                            
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                        <button id="saveEditBtn" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="section-saisons" class="section pt-3">
+                        <div id="seasonsManager" class="card card-body">
+                            <h5 class="mb-3">Gestion des saisons</h5>
+                            <div id="seasonsList" class="mb-2 text-muted">Chargement des saisons…</div>
+                        </div>
+                    </div>
+
+                    <div id="section-users" class="section pt-3">
+                        <div class="card card-body mb-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Rechercher par email</label>
+                                    <input id="userSearchEmail" type="email" class="form-control" placeholder="ex: utilisateur@example.com">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <button id="userSearchBtn" class="btn btn-primary w-100">🔎 Rechercher</button>
+                                </div>
+                            </div>
+                            <div id="userSearchMessage" class="small mt-2"></div>
+                        </div>
+                        <div id="usersAdminResults" class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Actions</th></tr></thead>
+                                <tbody id="usersAdminTbody"><tr><td colspan="4" class="text-muted">Aucun résultat</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="assets/loader.js"></script>
+                <script src="script-gestionnaire.js"></script>
+            </body>
+            </html>
