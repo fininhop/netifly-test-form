@@ -41,13 +41,7 @@ try {
 // ---------------------------------------------------------------------
 
 
-const PRICES = {
-    'blanc_400g': 3.60, 'blanc_800g': 6.50, 'blanc_1kg': 7.00,
-    'complet_400g': 3.60, 'complet_800g': 6.50, 'complet_1kg': 7.00,
-    'cereale_400g': 4.60, 'cereale_800g': 8.50, 'cereale_1kg': 9.00,
-    'epeautre_400g': 4.60, 'epeautre_800g': 8.50, 'epeautre_1kg': 9.00,
-    'sarrazin': 7.00
-};
+let CLIENT_PRODUCTS = [];
 
 // Variables globales pour les saisons
 let availableSeasons = [];
@@ -98,13 +92,38 @@ function populateSeasonSelect() {
     });
 }
 
-const PRODUCT_NAMES = {
-    'blanc_400g': 'Blanc 400g', 'blanc_800g': 'Blanc 800g', 'blanc_1kg': 'Blanc 1kg',
-    'complet_400g': 'Complet 400g', 'complet_800g': 'Complet 800g', 'complet_1kg': 'Complet 1kg',
-    'cereale_400g': 'Céréale 400g', 'cereale_800g': 'Céréale 800g', 'cereale_1kg': 'Céréale 1kg',
-    'epeautre_400g': 'Épeautre 400g', 'epeautre_800g': 'Épeautre 800g', 'epeautre_1kg': 'Épeautre 1kg',
-    'sarrazin': 'Sarrazin'
-};
+function renderClientProducts(products){
+    const productGrid = document.getElementById('productGrid');
+    if (!productGrid) return;
+    productGrid.innerHTML = '';
+    products.filter(p=>p.active!==false).forEach((p, idx) => {
+        const id = `prod_${p.id}`;
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col';
+        colDiv.innerHTML = `
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold text-primary mb-2">${p.name}</h6>
+                    <p class="card-text text-success fw-semibold fs-5 mb-1">€ ${Number(p.price).toFixed(2)}</p>
+                    <p class="text-muted small mb-3">${Number(p.unitWeight).toFixed(3)} kg / unité</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="changeQuantity('${id}', -1)" style="width:36px;height:36px;padding:0;">−</button>
+                        <input type="number" id="${id}" data-name="${p.name}" data-price="${p.price}" data-unitweight="${p.unitWeight}" class="form-control form-control-sm text-center mx-2" value="0" min="0" style="max-width:70px;" oninput="updateTotal()" />
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-circle" onclick="changeQuantity('${id}', 1)" style="width:36px;height:36px;padding:0;">+</button>
+                    </div>
+                </div>
+            </div>`;
+        productGrid.appendChild(colDiv);
+    });
+}
+
+async function loadClientProducts(){
+    try{
+        const r = await fetch('/api/products');
+        const j = await r.json();
+        if (j.ok) { CLIENT_PRODUCTS = j.products || []; renderClientProducts(CLIENT_PRODUCTS); updateTotal(); }
+    }catch(e){ console.error('Produits client', e); }
+}
 
 // Toast notification function
 function showToast(title, message, type = 'info') {
@@ -149,20 +168,14 @@ window.updateTotal = function() {
     let totalPrice = 0;
     const items = [];
 
-    Object.keys(PRICES).forEach(productId => {
-        const input = document.getElementById(productId);
-        if (input) {
-            const quantity = parseInt(input.value) || 0;
-            if (quantity > 0) {
-                totalItems += quantity;
-                totalPrice += quantity * PRICES[productId];
-                items.push({
-                    name: PRODUCT_NAMES[productId],
-                    quantity: quantity,
-                    price: PRICES[productId],
-                    total: quantity * PRICES[productId]
-                });
-            }
+    document.querySelectorAll('#productGrid input[type="number"]').forEach(input => {
+        const quantity = parseInt(input.value) || 0;
+        if (quantity > 0) {
+            const name = input.getAttribute('data-name');
+            const price = Number(input.getAttribute('data-price')) || 0;
+            totalItems += quantity;
+            totalPrice += quantity * price;
+            items.push({ name, quantity, price, total: quantity * price });
         }
     });
 
@@ -238,40 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessage = document.getElementById('statusMessage');
 
     // Générer dynamiquement les cartes de produits
-    const productGrid = document.getElementById('productGrid');
-    if (productGrid) {
-        const productCategories = [
-            { label: '🥖 Pain Blanc', products: ['blanc_400g', 'blanc_800g', 'blanc_1kg'] },
-            { label: '🌾 Pain Complet', products: ['complet_400g', 'complet_800g', 'complet_1kg'] },
-            { label: '🌻 Pain aux Céréales', products: ['cereale_400g', 'cereale_800g', 'cereale_1kg'] },
-            { label: '🌿 Pain d\'Épeautre', products: ['epeautre_400g', 'epeautre_800g', 'epeautre_1kg'] },
-            { label: '🥐 Pain au Sarrazin', products: ['sarrazin'] }
-        ];
-
-        productCategories.forEach(category => {
-            category.products.forEach(productId => {
-                const name = PRODUCT_NAMES[productId];
-                const price = PRICES[productId];
-                
-                const colDiv = document.createElement('div');
-                colDiv.className = 'col';
-                colDiv.innerHTML = `
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold text-primary mb-2">${name}</h6>
-                            <p class="card-text text-success fw-semibold fs-5 mb-3">€ ${price.toFixed(2)}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="changeQuantity('${productId}', -1)" style="width:36px;height:36px;padding:0;">−</button>
-                                <input type="number" id="${productId}" class="form-control form-control-sm text-center mx-2" value="0" min="0" style="max-width:70px;" oninput="updateTotal()" />
-                                <button type="button" class="btn btn-sm btn-outline-success rounded-circle" onclick="changeQuantity('${productId}', 1)" style="width:36px;height:36px;padding:0;">+</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                productGrid.appendChild(colDiv);
-            });
-        });
-    }
+    loadClientProducts();
 
     // Initialisation du total
     updateTotal();

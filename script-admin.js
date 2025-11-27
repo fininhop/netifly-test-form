@@ -38,6 +38,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminMessage = document.getElementById('adminMessage');
     const logoutAdmin = document.getElementById('logoutAdmin');
     const sortSelect = document.getElementById('sortSelect');
+    
+        // Produits: chargement et CRUD
+        async function loadProducts() {
+            const resp = await fetch('/api/products');
+            const data = await resp.json();
+            if (!data.ok) return;
+            const tbody = document.querySelector('#productsTable tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            data.products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = \`
+                    <td>\${escapeHtml(p.name)}</td>
+                    <td>€\${Number(p.price).toFixed(2)}</td>
+                    <td>\${Number(p.unitWeight).toFixed(3)} kg</td>
+                    <td><span class="badge \${p.active ? 'bg-success' : 'bg-secondary'}">\${p.active ? 'Actif' : 'Inactif'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" data-action="edit" data-id="\${p.id}">Éditer</button>
+                        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="\${p.id}">Supprimer</button>
+                    </td>\`;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    const action = e.currentTarget.getAttribute('data-action');
+                    const prod = data.products.find(x => x.id === id);
+                    if (action === 'delete') {
+                        if (!confirm(\`Supprimer le produit "\${prod?.name}" ?\`)) return;
+                        const r = await fetch(\`/api/products?id=\${id}\`, { method: 'DELETE' });
+                        const j = await r.json();
+                        if (j.ok) {
+                            showToast('Produit supprimé', 'Succès');
+                            loadProducts();
+                        } else showToast(j.error || 'Erreur', 'Erreur');
+                    }
+                    if (action === 'edit') {
+                        const name = prompt('Nom du produit', prod?.name || '');
+                        if (name == null) return;
+                        const price = Number(prompt('Prix (€)', String(prod?.price ?? '')));
+                        if (Number.isNaN(price)) return alert('Prix invalide');
+                        const unitWeight = Number(prompt('Poids unitaire (kg)', String(prod?.unitWeight ?? '')));
+                        if (Number.isNaN(unitWeight)) return alert('Poids invalide');
+                        const active = confirm('Produit actif ? OK=Actif, Annuler=Inactif');
+                        const r = await fetch(\`/api/products?id=\${id}\`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, unitWeight, active }) });
+                        const j = await r.json();
+                        if (j.ok) {
+                            showToast('Produit mis à jour', 'Succès');
+                            loadProducts();
+                        } else showToast(j.error || 'Erreur', 'Erreur');
+                    }
+                });
+            });
+        }
+
+        function wireProductCreateForm() {
+            const form = document.getElementById('createProductForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('prodName').value.trim();
+                const price = Number(document.getElementById('prodPrice').value);
+                const unitWeight = Number(document.getElementById('prodUnitWeight').value);
+                if (!name || Number.isNaN(price) || Number.isNaN(unitWeight)) {
+                    return alert('Veuillez renseigner correctement les champs');
+                }
+                const resp = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, unitWeight, active: true }) });
+                const j = await resp.json();
+                if (j.ok) {
+                    form.reset();
+                    showToast('Produit ajouté', 'Succès');
+                    loadProducts();
+                } else showToast(j.error || 'Erreur', 'Erreur');
+            });
+        }
+
+        wireProductCreateForm();
+        loadProducts();
 
     // Éléments pour la gestion des saisons
     const seasonsContainer = document.getElementById('seasonsContainer');
