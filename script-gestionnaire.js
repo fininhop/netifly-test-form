@@ -35,7 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminMessage = document.getElementById('adminMessage');
     const ordersTableContainer = document.getElementById('ordersTableContainer');
     const seasonFilterEl = document.getElementById('seasonFilter');
-    const tabsEl = document.getElementById('gestionTabs');
+    const tabsEl = null; // tabs replaced by accordion
+    const usersListEl = document.getElementById('usersList');
+    const userSearchEmailEl = document.getElementById('userSearchEmail');
+    const userSearchBtn = document.getElementById('userSearchBtn');
 
     function showMessage(text, type = '') {
         adminMessage.innerHTML = text ? `<span class="text-${type}">${text}</span>` : '';
@@ -258,22 +261,70 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredOrders = selectedSeason ? (allOrders || []).filter(o => (o.season||'') === selectedSeason) : (allOrders || []);
     }
 
-    function setupTabs() {
-        if (!tabsEl) return;
-        tabsEl.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                tabsEl.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                const target = link.getAttribute('data-target');
-                document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-                const el = document.querySelector(target);
-                if (el) el.classList.add('active');
+    function setupTabs() { /* no-op, using accordion */ }
+
+    function isSmartphone() {
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        return /android|iphone|ipad|ipod|iemobile|mobile/i.test(ua);
+    }
+
+    async function searchUserByEmail(email) {
+        if (!email) { usersListEl.innerHTML = '<div class="alert alert-light">Entrer un email pour rechercher.</div>'; return; }
+        try {
+            showPageLoader('Recherche utilisateur…');
+            const resp = await fetch('/api/find-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
             });
-        });
+            const result = await resp.json().catch(() => null);
+            if (!resp.ok) {
+                usersListEl.innerHTML = '<div class="alert alert-warning">Utilisateur introuvable.</div>';
+                return;
+            }
+            const user = result && (result.user || result);
+            if (!user) {
+                usersListEl.innerHTML = '<div class="alert alert-warning">Aucun utilisateur trouvé.</div>';
+                return;
+            }
+            const tel = (user.phone || '').replace(/\s+/g,'');
+            const canCall = isSmartphone() && tel;
+            const canSms = isSmartphone() && tel;
+            const mail = user.email || '';
+            let actions = `<a class="btn btn-sm btn-outline-primary me-2" href="mailto:${mail}">✉️ Email</a>`;
+            if (canCall) actions += `<a class="btn btn-sm btn-outline-success me-2" href="tel:${tel}">📞 Appeler</a>`;
+            if (canSms) actions += `<a class="btn btn-sm btn-outline-warning" href="sms:${tel}">📩 SMS</a>`;
+
+            usersListEl.innerHTML = `
+                <table class="table table-sm">
+                    <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>${user.name || '—'}</td>
+                            <td>${mail || '—'}</td>
+                            <td>${tel || '—'}</td>
+                            <td>${actions}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        } catch (e) {
+            console.error('searchUser error', e);
+            usersListEl.innerHTML = '<div class="alert alert-danger">Erreur réseau.</div>';
+        } finally {
+            hidePageLoader();
+        }
     }
 
     // Auto-login si token stocké
     setupTabs();
+    if (userSearchBtn && usersListEl) {
+        userSearchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = (userSearchEmailEl && userSearchEmailEl.value || '').trim().toLowerCase();
+            searchUserByEmail(email);
+        });
+    }
     const storedToken = localStorage.getItem('adminToken');
     if (storedToken) {
         loginScreen.classList.add('d-none');
