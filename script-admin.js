@@ -809,6 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sorted = [...list].sort((a,b)=> String(a.name||'').localeCompare(String(b.name||'')));
         let grandTotalPrice = 0, grandTotalWeight = 0;
         const sections = [];
+        const recap = {}; // { productName: { qty: number, unitPrice: number|0, unitWeight: number|0 } }
         sorted.forEach(o => {
             let subTotalPrice = 0, subTotalWeight = 0;
             const body = [[
@@ -839,6 +840,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lineWeight = wkg * qty;
                 subTotalPrice += linePrice;
                 subTotalWeight += lineWeight;
+                // Récap global pour fournées
+                const key = String(it.name||'').trim();
+                if(!recap[key]) recap[key] = { qty:0, unitPrice: unit || 0, unitWeight: wkg || 0 };
+                recap[key].qty += qty;
+                // Mettre à jour infos si manquantes (garder premier non nul)
+                if(!recap[key].unitPrice && unit) recap[key].unitPrice = unit;
+                if(!recap[key].unitWeight && wkg) recap[key].unitWeight = wkg;
                 body.push([
                     it.name || '',
                     String(qty),
@@ -859,6 +867,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 ]
             });
         });
+        // Construire tableau récapitulatif pour le boulanger
+        const recapRows = [[
+            { text: 'Produit', bold: true },
+            { text: 'Quantité Totale', bold: true },
+            { text: 'Poids total (kg)', bold: true },
+            { text: 'Montant total (€)', bold: true }
+        ]];
+        Object.keys(recap).sort((a,b)=> a.localeCompare(b,'fr',{sensitivity:'base'})).forEach(name => {
+            const r = recap[name];
+            const totalWeight = (r.unitWeight || 0) * r.qty;
+            const totalPrice = (r.unitPrice || 0) * r.qty;
+            recapRows.push([
+                name,
+                String(r.qty),
+                totalWeight ? totalWeight.toFixed(3) : '0.000',
+                totalPrice ? `€${totalPrice.toFixed(2)}` : '€0.00'
+            ]);
+        });
+        const recapBlock = {
+            margin:[0,20,0,0],
+            stack:[
+                { text: 'Récapitulatif Fournée (Boulanger)', style:'totals' },
+                { table: { headerRows:1, widths:['*','auto','auto','auto'], body: recapRows } }
+            ]
+        };
         const nowStr = new Date().toLocaleString('fr-FR');
         const docDefinition = {
             pageMargins: [40,60,40,40],
@@ -867,7 +900,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 { text: `Total montant: €${grandTotalPrice.toFixed(2)}`, style: 'totals' },
                 { text: `Total poids: ${grandTotalWeight.toFixed(3)} kg`, style: 'totals' },
                 { text: ' ', margin: [0, 4, 0, 8] },
-                ...sections
+                ...sections,
+                recapBlock
             ],
             styles: {
                 headerLeft: { fontSize: 14, bold: true },
