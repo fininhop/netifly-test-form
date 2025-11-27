@@ -48,7 +48,10 @@ module.exports = async (req, res) => {
                 phone: data.phone || 'N/A',
                 date: data.date,
                 // champ retiré
-                items: data.items,
+                items: Array.isArray(data.items) ? data.items.map(it => ({
+                    ...it,
+                    name: typeof it.name === 'string' ? it.name.trim() : it.name
+                })) : [],
                 createdAt
             };
         }).sort((a, b) => {

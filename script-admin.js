@@ -94,12 +94,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Utiliser le mapping global centralisé défini dans config.js
     const NAME_PRICES = window.NAME_PRICES || {};
+    const NAME_WEIGHTS = window.NAME_WEIGHTS || {};
+    function normalizeKey(s){ return String(s||'').trim().toLowerCase(); }
+    function resolveMap(map, key){
+        const nk = normalizeKey(key);
+        if (nk in map) return map[nk];
+        for (const k of Object.keys(map)) { if (normalizeKey(k) === nk) return map[k]; }
+        return undefined;
+    }
 
     function computeOrderTotal(order) {
         const items = order.items || [];
         return items.reduce((sum, it) => {
-            const prices = window.NAME_PRICES || {};
-            const unit = (typeof it.price === 'number') ? it.price : (prices[it.name] || 0);
+            const priceFromMap = resolveMap(window.NAME_PRICES || {}, it.name);
+            const unit = (typeof it.price === 'number') ? it.price : (priceFromMap !== undefined ? priceFromMap : 0);
             const qty = Number(it.quantity) || 0;
             return sum + unit * qty;
         }, 0);
@@ -640,8 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 { text: 'Total Poids (kg)', bold: true }
             ]];
             (o.items || []).forEach(it => {
-                const unit = Number(NAME_PRICES[it.name] || it.price || 0);
-                const wkg = Number(NAME_WEIGHTS[it.name] || 0);
+                const priceFromMap = resolveMap(NAME_PRICES, it.name);
+                const unit = Number(priceFromMap !== undefined ? priceFromMap : (it.price || 0));
+                const weightFromMap = resolveMap(NAME_WEIGHTS, it.name);
+                const wkg = Number(weightFromMap || 0);
                 const qty = Number(it.quantity)||0;
                 const linePrice = unit * qty;
                 const lineWeight = wkg * qty;

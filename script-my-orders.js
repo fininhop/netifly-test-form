@@ -70,18 +70,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         container.innerHTML = '';
         const NAME_PRICES = window.NAME_PRICES || {};
+        const NAME_WEIGHTS = window.NAME_WEIGHTS || {};
+        function normalizeKey(s){ return String(s||'').trim().toLowerCase(); }
+        function resolveMap(map, key){
+            const nk = normalizeKey(key);
+            if (nk in map) return map[nk];
+            // chercher correspondance insensible à la casse parmi les clés existantes
+            for (const k of Object.keys(map)) { if (normalizeKey(k) === nk) return map[k]; }
+            return undefined;
+        }
         orders.forEach(o => {
             const card = document.createElement('div');
             card.className = 'order-card';
             const dateCmd = o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
             
             const itemsHtml = (o.items || []).map(it => {
-                const unit = Number(NAME_PRICES[it.name] || it.price || 0);
+                const priceFromMap = resolveMap(NAME_PRICES, it.name);
+                const unit = Number(priceFromMap !== undefined ? priceFromMap : (it.price || 0));
                 const qty = Number(it.quantity) || 0;
+                const weightFromMap = resolveMap(NAME_WEIGHTS, it.name);
+                const unitWeight = Number(weightFromMap || 0);
                 const line = unit * qty;
-                return `<div class="item-row"><span>${qty} × ${it.name}</span><span class="text-muted">${unit ? `€${unit.toFixed(2)}` : '€0.00'} /u • ${line ? `€${line.toFixed(2)}` : '€0.00'}</span></div>`;
+                const lineWeight = unitWeight * qty;
+                return `<div class="item-row"><span>${qty} × ${it.name}</span><span class="text-muted">${`€${unit.toFixed(2)}`} /u • ${`€${line.toFixed(2)}`} ${unitWeight ? `• ${unitWeight.toFixed(3)} kg/u • ${lineWeight.toFixed(3)} kg` : ''}</span></div>`;
             }).join('');
-            const total = (o.items || []).reduce((s, it) => s + ((Number(NAME_PRICES[it.name] || it.price || 0)) * (Number(it.quantity)||0)), 0);
+            const total = (o.items || []).reduce((s, it) => {
+                const priceFromMap = resolveMap(NAME_PRICES, it.name);
+                const unit = Number(priceFromMap !== undefined ? priceFromMap : (it.price || 0));
+                const qty = Number(it.quantity)||0;
+                return s + unit * qty;
+            }, 0);
             
             card.innerHTML = `
                 <div class="order-header">
