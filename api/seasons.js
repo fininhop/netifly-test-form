@@ -18,8 +18,6 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 async function handler(req, res) {
-    // Vérifier le token admin pour toutes les opérations
-    if (!adminOnly(req, res)) return;
 
     const { method } = req;
     const { seasonId } = req.query;
@@ -38,6 +36,8 @@ async function handler(req, res) {
                 }
 
             case 'POST':
+                // Opération protégée (création)
+                if (!adminOnly(req, res)) return;
                 const { name, startDate, endDate, description } = req.body;
                 if (!name || !startDate || !endDate) {
                     return res.status(400).json({ message: 'Nom, date de début et date de fin requis' });
@@ -47,6 +47,8 @@ async function handler(req, res) {
                 return res.status(201).json({ season: newSeason, message: 'Saison créée' });
 
             case 'PUT':
+                // Opération protégée (mise à jour)
+                if (!adminOnly(req, res)) return;
                 if (!seasonId) {
                     return res.status(400).json({ message: 'ID de saison requis' });
                 }
@@ -55,6 +57,8 @@ async function handler(req, res) {
                 return res.status(200).json({ season: updatedSeason, message: 'Saison mise à jour' });
 
             case 'DELETE':
+                // Opération protégée (suppression)
+                if (!adminOnly(req, res)) return;
                 if (!seasonId) {
                     return res.status(400).json({ message: 'ID de saison requis' });
                 }
