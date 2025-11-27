@@ -125,6 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateAllSeasonsStats(orders) {
         if (!allSeasonsStatsEl || !allSeasonsStatsBodyTbody) return;
+        const showAll = currentSeasonFilter === 'all';
+        allSeasonsStatsEl.style.display = showAll ? 'block' : 'none';
+        if (!showAll) return;
         const bySeason = new Map();
         orders.forEach(o => {
             const key = o.seasonName || o.seasonId || '—';
