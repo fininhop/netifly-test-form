@@ -678,6 +678,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 doc.text('Détails:', itemLeft, y);
                 doc.setFont('helvetica', 'normal');
                 y += lineHeight - 4;
+                // En-tête colonnes: Article | Quantité | Prix Unitaire | Total (€)
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+                doc.text('Article', itemLeft, y);
+                doc.text('Quantité', itemLeft + 250, y);
+                doc.text('Prix Unitaire', itemLeft + 300, y);
+                doc.text('Total (€)', itemLeft + 380, y);
+                y += 10; doc.setLineWidth(0.3); doc.line(itemLeft, y, itemLeft + 440, y);
+                doc.setFont('helvetica', 'normal');
                 // Colonnes: Article, Qté, Prix unit., Total
                 doc.setFontSize(10);
                 items.forEach(it => {
