@@ -642,9 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Table header
         doc.setFont('helvetica', 'bold');
         doc.text('Nom', left, y);
-        doc.text('Email', left + 180, y);
-        doc.text('Téléphone', left + 340, y);
-        doc.text('Total (€)', left + 460, y);
+        doc.text('Total (€)', left + 420, y);
         y += 14;
         doc.setLineWidth(0.5); doc.line(left, y, left + 520, y);
         y += 10;
@@ -653,15 +651,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const lineHeight = 14; const pageHeight = doc.internal.pageSize.getHeight();
         list.forEach(o => {
             const name = o.name || '—';
-            const email = o.email || '—';
-            const phone = o.phone || '—';
             const total = computeOrderTotal(o).toFixed(2);
 
             if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
             doc.text(String(name), left, y);
-            doc.text(String(email), left + 180, y);
-            doc.text(String(phone), left + 340, y);
-            doc.text(`€${total}`, left + 460, y);
+            doc.text(`€${total}`, left + 420, y);
             y += lineHeight;
 
             // Détails par commande: pains, quantités, prix unitaires et total ligne
