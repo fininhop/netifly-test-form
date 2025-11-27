@@ -663,6 +663,34 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.text(String(phone), left + 340, y);
             doc.text(`€${total}`, left + 460, y);
             y += lineHeight;
+
+            // Détails par commande: pains, quantités, prix unitaires et total ligne
+            const items = Array.isArray(o.items) ? o.items : [];
+            if (items.length) {
+                // En-tête des items
+                const itemLeft = left + 12;
+                if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
+                doc.setFont('helvetica', 'italic');
+                doc.text('Détails:', itemLeft, y);
+                doc.setFont('helvetica', 'normal');
+                y += lineHeight - 4;
+                // Colonnes: Article, Qté, Prix unit., Total
+                doc.setFontSize(10);
+                items.forEach(it => {
+                    const itName = String(it.name || '—');
+                    const qty = Number(it.quantity || 0);
+                    const unit = (typeof it.price === 'number') ? it.price : (NAME_PRICES[itName] || 0);
+                    const lineTotal = (unit * qty).toFixed(2);
+                    if (y + lineHeight > pageHeight - 40) { doc.addPage(); y = topStart; }
+                    doc.text(itName, itemLeft, y);
+                    doc.text(String(qty), itemLeft + 250, y);
+                    doc.text(`€${unit.toFixed(2)}`, itemLeft + 300, y);
+                    doc.text(`€${lineTotal}`, itemLeft + 380, y);
+                    y += lineHeight - 2;
+                });
+                doc.setFontSize(11);
+                y += 6;
+            }
         });
 
         // Footer total
