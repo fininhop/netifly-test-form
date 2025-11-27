@@ -32,6 +32,17 @@ module.exports = async (req, res) => {
             return res.status(400).json({ message: 'Données de commande incomplètes.' });
         }
 
+        // Vérifier qu'au moins une saison existe avant d'accepter la commande
+        try {
+            const seasonsSnap = await db.collection('seasons').limit(1).get();
+            if (seasonsSnap.empty) {
+                return res.status(503).json({ message: 'Commande momentanément indisponible: aucune saison créée. Réessayez plus tard.' });
+            }
+        } catch (e) {
+            console.error('Erreur vérification saisons:', e);
+            return res.status(503).json({ message: 'Commande momentanément indisponible (vérification saisons). Réessayez plus tard.' });
+        }
+
         // Champ supprimé définitivement
 
         const orderData = {
