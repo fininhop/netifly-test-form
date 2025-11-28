@@ -188,7 +188,7 @@ function renderClientProducts(products){
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center gap-2">
                         <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" data-role="toggle-arrow" style="width:32px;height:32px;line-height:1;">▼</button>
-                        <h5 class="mb-0">${cat}</h5>
+                        <h5 class="mb-0 category-toggle" role="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor:pointer;">${cat}</h5>
                     </div>
                 </div>
                 <div id="${collapseId}" class="collapse">
@@ -218,9 +218,19 @@ function renderClientProducts(products){
         // Update arrow on collapse show/hide
         const collapseEl = wrapper.querySelector('#'+collapseId);
         const toggleBtn = wrapper.querySelector('button[data-role="toggle-arrow"]');
+        const titleToggle = wrapper.querySelector('.category-toggle');
         if (collapseEl && toggleBtn) {
-            collapseEl.addEventListener('show.bs.collapse', ()=>{ toggleBtn.textContent = '▲'; toggleBtn.setAttribute('aria-expanded','true'); });
-            collapseEl.addEventListener('hide.bs.collapse', ()=>{ toggleBtn.textContent = '▼'; toggleBtn.setAttribute('aria-expanded','false'); });
+            collapseEl.addEventListener('show.bs.collapse', ()=>{ toggleBtn.textContent = '▲'; toggleBtn.setAttribute('aria-expanded','true'); if (titleToggle) titleToggle.setAttribute('aria-expanded','true'); });
+            collapseEl.addEventListener('hide.bs.collapse', ()=>{ toggleBtn.textContent = '▼'; toggleBtn.setAttribute('aria-expanded','false'); if (titleToggle) titleToggle.setAttribute('aria-expanded','false'); });
+        }
+        // Fallback JS toggle (in case data attributes fail) for title click
+        if (titleToggle && collapseEl) {
+            titleToggle.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const isShown = collapseEl.classList.contains('show');
+                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapseEl);
+                if (isShown) { bsCollapse.hide(); } else { bsCollapse.show(); }
+            });
         }
         productGrid.appendChild(wrapper);
     });
