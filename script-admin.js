@@ -259,7 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const prod = currentProducts.find(x => x.id === id);
                         const token = localStorage.getItem('adminToken');
                         if (action === 'delete') {
-                            if (!confirm(`Supprimer le produit "${prod?.name}" ?`)) return;
+                            const okDelete = await (window.showConfirmModal ? window.showConfirmModal(`Supprimer le produit \"${prod?.name}\" ?`) : Promise.resolve(confirm(`Supprimer le produit \"${prod?.name}\" ?`)));
+                            if (!okDelete) return;
                             const r = await fetch(`/api/products?id=${id}`, { method: 'DELETE', headers: { 'x-admin-token': token } });
                             const j = await r.json();
                             if (j.ok) { showToast('Produit supprimé', 'Succès'); loadProducts(); }
@@ -280,7 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const prod = currentProducts.find(x => x.id === id);
                     const token = localStorage.getItem('adminToken');
                     if (action === 'delete') {
-                        if (!confirm(`Supprimer le produit "${prod?.name}" ?`)) return;
+                        const okDelete = await (window.showConfirmModal ? window.showConfirmModal(`Supprimer le produit \"${prod?.name}\" ?`) : Promise.resolve(confirm(`Supprimer le produit \"${prod?.name}\" ?`)));
+                        if (!okDelete) return;
                         const r = await fetch(`/api/products?id=${id}`, { method: 'DELETE', headers: { 'x-admin-token': token } });
                         const j = await r.json();
                         if (j.ok) { showToast('Produit supprimé', 'Succès'); loadProducts(); }
@@ -938,7 +940,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const orderId = card && card.getAttribute('data-order-id');
                 const clientName = card && card.querySelector('.order-title').textContent;
                 if (!orderId) return;
-                if (!confirm(`Confirmer la suppression de la commande de ${clientName} ?`)) return;
+                const okOrderDelete = await (window.showConfirmModal ? window.showConfirmModal(`Supprimer la commande de ${clientName} ?`) : Promise.resolve(confirm(`Supprimer la commande de ${clientName} ?`)));
+                if (!okOrderDelete) return;
                 const token = localStorage.getItem('adminToken');
                 showPageLoader('Suppression…');
                 try {
@@ -1105,7 +1108,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = e.target.closest('.season-card');
                 const id = card && card.getAttribute('data-season-id');
                 if (!id) return;
-                if (!confirm('Supprimer cette saison ?')) return;
+                const okSeasonDelete = await (window.showConfirmModal ? window.showConfirmModal('Supprimer cette saison ?') : Promise.resolve(confirm('Supprimer cette saison ?')));
+                if (!okSeasonDelete) return;
                 const token = localStorage.getItem('adminToken');
                 try {
                     const resp = await fetch(`/api/seasons?seasonId=${encodeURIComponent(id)}` , {

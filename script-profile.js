@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   deleteBtn.addEventListener('click', async () => {
-    if (!confirm('Confirmez la suppression de votre compte ?')) return;
+    const okDelete = await (window.showConfirmModal ? window.showConfirmModal('Confirmez la suppression de votre compte ?') : Promise.resolve(confirm('Confirmez la suppression de votre compte ?')));
+    if (!okDelete) return;
     const userId = user.userId || user.id;
     if (!userId) { showMessageModal('Erreur', 'Identifiant utilisateur manquant', 'error'); return; }
     try {

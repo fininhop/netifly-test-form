@@ -452,7 +452,8 @@ function basketRemoveItemById(id){
 function clearBasket(){
     const hasAny = Array.from(document.querySelectorAll('#productGrid input[type="number"]')).some(input => (parseInt(input.value)||0) > 0);
     if (!hasAny) return;
-    if (!confirm('Vider le panier ? Toutes les quantités seront remises à zéro.')) return;
+    const okClear = await (window.showConfirmModal ? window.showConfirmModal('Vider le panier ? Toutes les quantités seront remises à zéro.') : Promise.resolve(confirm('Vider le panier ? Toutes les quantités seront remises à zéro.')));
+    if (!okClear) return;
     document.querySelectorAll('#productGrid input[type="number"]').forEach(input => { input.value = '0'; });
     updateTotal();
 }

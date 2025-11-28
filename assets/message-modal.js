@@ -6,8 +6,8 @@
   window.showMessageModal = function(title, message, type){
     var el = ensureModal();
     if(!el || !window.bootstrap){
-      // Fallback minimal si bootstrap absent
-      alert((title?title+': ':'') + (message||''));
+      // Fallback minimal si bootstrap absent: éviter alert() (pas de modal native souhaitée)
+      console.warn('Modal bootstrap indisponible:', title, message);
       return;
     }
     var titleEl = document.getElementById('messageModalTitle');
