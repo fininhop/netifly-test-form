@@ -72,16 +72,25 @@
         <form id="passwordForm" class="row g-3">
           <div class="col-md-4">
             <label class="form-label">Mot de passe actuel *</label>
-            <input type="password" id="currentPassword" class="form-control" required autocomplete="current-password" placeholder="••••••••">
+            <div class="input-group">
+              <input type="password" id="currentPassword" class="form-control" required autocomplete="current-password" placeholder="••••••••">
+              <button type="button" class="btn btn-outline-secondary password-toggle-btn" data-target="#currentPassword" aria-label="Afficher/Masquer le mot de passe">👁️</button>
+            </div>
           </div>
           <div class="col-md-4">
             <label class="form-label">Nouveau mot de passe *</label>
-            <input type="password" id="newPassword" class="form-control" required autocomplete="new-password" placeholder="Au moins 8 caractères">
+            <div class="input-group">
+              <input type="password" id="newPassword" class="form-control" required autocomplete="new-password" placeholder="Au moins 8 caractères">
+              <button type="button" class="btn btn-outline-secondary password-toggle-btn" data-target="#newPassword" aria-label="Afficher/Masquer le mot de passe">👁️</button>
+            </div>
             <div class="form-text" id="pwdStrengthText"></div>
           </div>
           <div class="col-md-4">
             <label class="form-label">Confirmer le nouveau mot de passe *</label>
-            <input type="password" id="confirmNewPassword" class="form-control" required autocomplete="new-password" placeholder="Répétez le mot de passe">
+            <div class="input-group">
+              <input type="password" id="confirmNewPassword" class="form-control" required autocomplete="new-password" placeholder="Répétez le mot de passe">
+              <button type="button" class="btn btn-outline-secondary password-toggle-btn" data-target="#confirmNewPassword" aria-label="Afficher/Masquer le mot de passe">👁️</button>
+            </div>
           </div>
           <div class="col-12 d-grid gap-2 d-sm-flex">
             <button type="submit" class="btn btn-outline-primary">🔐 Changer le mot de passe</button>

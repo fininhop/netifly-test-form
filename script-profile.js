@@ -147,4 +147,18 @@ document.addEventListener('DOMContentLoaded', () => {
       passwordFeedback.className = 'text-danger';
     }
   });
+
+  // Afficher / masquer mots de passe
+  document.querySelectorAll('.password-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetSel = btn.getAttribute('data-target');
+      const input = targetSel ? document.querySelector(targetSel) : null;
+      if (!input) return;
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+      btn.textContent = isPwd ? '🙈' : '👁️';
+      // Maintenir le focus pour UX
+      input.focus();
+    });
+  });
 });
