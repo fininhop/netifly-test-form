@@ -184,14 +184,147 @@ document.addEventListener('DOMContentLoaded', () => {
                 const token = localStorage.getItem('adminToken');
                 const headers = { 'Content-Type': 'application/json', 'x-admin-token': token };
                 try {
+                    showPageLoader('Ré-ordonnancement…');
                     const r1 = await fetch('/api/products?id='+encodeURIComponent(idA), { method:'PUT', headers, body: JSON.stringify({ sortOrder: bOrder }) });
                     const j1 = await r1.json().catch(()=>({}));
                     if (!r1.ok || !j1.ok) return false;
                     const r2 = await fetch('/api/products?id='+encodeURIComponent(idB), { method:'PUT', headers, body: JSON.stringify({ sortOrder: aOrder }) });
                     const j2 = await r2.json().catch(()=>({}));
                     if (!r2.ok || !j2.ok) return false;
+                    // Update local cache
+                    prodA.sortOrder = bOrder;
+                    prodB.sortOrder = aOrder;
                     return true;
                 } catch(e){ return false; }
+                finally { try { hidePageLoader(); } catch(e){} }
+            }
+
+            function rerenderCategoryRow(catName) {
+                const accId = 'adminProductsAccordion';
+                const headingButton = Array.from(document.querySelectorAll('#'+accId+' .accordion-button')).find(btn => btn.textContent.trim() === catName);
+                if (!headingButton) return;
+                const collapseId = headingButton.getAttribute('data-bs-target');
+                const collapseEl = collapseId ? document.querySelector(collapseId) : null;
+                if (!collapseEl) return;
+                const row = collapseEl.querySelector('.row');
+                if (!row) return;
+                // Build sorted list for this category
+                const list = currentProducts.filter(p => (p.category||'') === catName)
+                    .sort((a,b)=>{
+                        const sa = (typeof a.sortOrder==='number')?a.sortOrder:0;
+                        const sb = (typeof b.sortOrder==='number')?b.sortOrder:0;
+                        if (sa !== sb) return sa - sb;
+                        return String(a.name||'').localeCompare(String(b.name||''));
+                    });
+                // Rebuild cards minimalistically
+                row.innerHTML = '';
+                list.forEach(p => {
+                    const col = document.createElement('div');
+                    col.className = 'col-12 col-md-6';
+                    const card = document.createElement('div');
+                    card.className = 'card h-100 shadow-sm';
+                    const body = document.createElement('div');
+                    body.className = 'card-body';
+                    const nameEl = document.createElement('h6');
+                    nameEl.className = 'card-title fw-bold text-primary mb-2';
+                    nameEl.textContent = String(p.name || '');
+                    const priceEl = document.createElement('p');
+                    priceEl.className = 'card-text text-success fw-semibold fs-6 mb-1';
+                    priceEl.textContent = '€ ' + Number(p.price).toFixed(2);
+                    const weightEl = document.createElement('p');
+                    weightEl.className = 'text-muted small mb-2';
+                    weightEl.textContent = Number(p.unitWeight).toFixed(3) + ' kg / unité';
+                    const metaRow = document.createElement('div');
+                    metaRow.className = 'd-flex align-items-center justify-content-between mb-2';
+                    const catBadge = document.createElement('span');
+                    const cat = (p.category || '').trim();
+                    if (cat) { catBadge.className = 'badge bg-primary-subtle text-primary-emphasis'; catBadge.textContent = cat; }
+                    else { catBadge.className = 'badge bg-light text-muted'; catBadge.textContent = '—'; }
+                    const orderBadge = document.createElement('span');
+                    const so = (typeof p.sortOrder === 'number') ? p.sortOrder : 0;
+                    orderBadge.className = 'badge bg-secondary-subtle text-secondary-emphasis';
+                    orderBadge.textContent = '#' + so;
+                    metaRow.appendChild(catBadge);
+                    metaRow.appendChild(orderBadge);
+                    const statusRow = document.createElement('div');
+                    const activeBadge = document.createElement('span');
+                    activeBadge.className = 'badge ' + (p.active ? 'bg-success' : 'bg-secondary');
+                    activeBadge.textContent = p.active ? 'Actif' : 'Inactif';
+                    statusRow.appendChild(activeBadge);
+                    const actions = document.createElement('div');
+                    actions.className = 'd-flex justify-content-end gap-2 mt-2';
+                    const btnUp = document.createElement('button');
+                    btnUp.className = 'btn btn-sm btn-outline-secondary';
+                    btnUp.setAttribute('data-action','move-up');
+                    btnUp.setAttribute('data-id', String(p.id));
+                    btnUp.setAttribute('data-category', String(p.category||''));
+                    btnUp.textContent = '↑';
+                    const btnDown = document.createElement('button');
+                    btnDown.className = 'btn btn-sm btn-outline-secondary';
+                    btnDown.setAttribute('data-action','move-down');
+                    btnDown.setAttribute('data-id', String(p.id));
+                    btnDown.setAttribute('data-category', String(p.category||''));
+                    btnDown.textContent = '↓';
+                    const btnEdit = document.createElement('button');
+                    btnEdit.className = 'btn btn-sm btn-outline-primary';
+                    btnEdit.setAttribute('data-action', 'edit');
+                    btnEdit.setAttribute('data-id', String(p.id));
+                    btnEdit.textContent = 'Éditer';
+                    const btnDelete = document.createElement('button');
+                    btnDelete.className = 'btn btn-sm btn-outline-danger';
+                    btnDelete.setAttribute('data-action', 'delete');
+                    btnDelete.setAttribute('data-id', String(p.id));
+                    btnDelete.textContent = 'Supprimer';
+                    body.appendChild(nameEl);
+                    body.appendChild(priceEl);
+                    body.appendChild(weightEl);
+                    body.appendChild(metaRow);
+                    body.appendChild(statusRow);
+                    actions.appendChild(btnUp);
+                    actions.appendChild(btnDown);
+                    actions.appendChild(btnEdit);
+                    actions.appendChild(btnDelete);
+                    body.appendChild(actions);
+                    card.appendChild(body);
+                    col.appendChild(card);
+                    row.appendChild(col);
+                });
+                // rebind actions in this category row only
+                row.querySelectorAll('button[data-action]').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        const action = e.currentTarget.getAttribute('data-action');
+                        const prod = currentProducts.find(x => x.id === id);
+                        const token = localStorage.getItem('adminToken');
+                        if (action === 'delete') {
+                            if (!confirm(`Supprimer le produit "${prod?.name}" ?`)) return;
+                            const r = await fetch(`/api/products?id=${id}`, { method: 'DELETE', headers: { 'x-admin-token': token } });
+                            const j = await r.json();
+                            if (j.ok) { showToast('Produit supprimé', 'Succès'); loadProducts(); }
+                            else showToast(j.error || 'Erreur', 'Erreur');
+                        }
+                        if (action === 'edit') {
+                            openProductModal(prod);
+                        }
+                        if (action === 'move-up' || action === 'move-down') {
+                            const catNameLocal = (prod && prod.category) ? String(prod.category) : '';
+                            const inCat = currentProducts.filter(p => (p.category||'') === catNameLocal)
+                                .sort((a,b)=>{
+                                    const ca = (typeof a.sortOrder==='number')?a.sortOrder:0;
+                                    const cb = (typeof b.sortOrder==='number')?b.sortOrder:0;
+                                    if (ca !== cb) return ca - cb;
+                                    return String(a.name||'').localeCompare(String(b.name||''));
+                                });
+                            const idx = inCat.findIndex(x => x.id === id);
+                            if (idx === -1) return;
+                            let targetIdx = action === 'move-up' ? idx - 1 : idx + 1;
+                            if (targetIdx < 0 || targetIdx >= inCat.length) return; // cannot move
+                            const ok = await swapSortOrderWithinCategory(catNameLocal, inCat[idx].id, inCat[targetIdx].id);
+                            if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); rerenderCategoryRow(catNameLocal); }
+                            else { showToast('Échec de ré-ordonnancement', 'Erreur', 'error'); }
+                        }
+                    });
+                });
             }
 
             grid.querySelectorAll('button[data-action]').forEach(btn => {
@@ -224,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         let targetIdx = action === 'move-up' ? idx - 1 : idx + 1;
                         if (targetIdx < 0 || targetIdx >= inCat.length) return; // cannot move
                         const ok = await swapSortOrderWithinCategory(catName, inCat[idx].id, inCat[targetIdx].id);
-                        if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); loadProducts(); }
+                        if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); rerenderCategoryRow(catName); }
                         else { showToast('Échec de ré-ordonnancement', 'Erreur', 'error'); }
                     }
                 });
