@@ -42,6 +42,23 @@ try {
 
 
 let CLIENT_PRODUCTS = [];
+let CLIENT_PRODUCTS_FINGERPRINT = '';
+let PRODUCTS_POLL_HANDLE = null;
+
+function computeProductsFingerprint(products) {
+    try {
+        const minimal = (products||[]).map(p => ({
+            id: String(p.id||''),
+            name: String(p.name||''),
+            category: String(p.category||''),
+            sortOrder: Number(p.sortOrder||0),
+            active: p.active !== false,
+            price: Number(p.price||0),
+            unitWeight: Number(p.unitWeight||0),
+        })).sort((a,b)=> a.id.localeCompare(b.id));
+        return JSON.stringify(minimal);
+    } catch(e) { return ''; }
+}
 
 // Variables globales pour les saisons
 let availableSeasons = [];
@@ -217,8 +234,58 @@ async function loadClientProducts(){
     try{
         const r = await fetch('/api/products');
         const j = await r.json();
-        if (j.ok) { CLIENT_PRODUCTS = j.products || []; renderClientProducts(CLIENT_PRODUCTS); updateTotal(); }
+        if (j.ok) {
+            CLIENT_PRODUCTS = j.products || [];
+            CLIENT_PRODUCTS_FINGERPRINT = computeProductsFingerprint(CLIENT_PRODUCTS);
+            renderClientProducts(CLIENT_PRODUCTS);
+            // restaurer les quantités si présentes en stockage temporaire
+            restoreQuantitiesFromCache();
+            updateTotal();
+            ensureProductsAutoRefresh();
+        }
     }catch(e){ console.error('Produits client', e); }
+}
+
+// Sauvegarder/restaurer quantités lors d'un rafraîchissement
+function captureCurrentQuantities(){
+    const map = {};
+    document.querySelectorAll('#productGrid input[type="number"]').forEach(input => {
+        const id = input.id;
+        map[id] = parseInt(input.value) || 0;
+    });
+    try { sessionStorage.setItem('quantitiesCache', JSON.stringify(map)); } catch(e){}
+}
+function restoreQuantitiesFromCache(){
+    let map = null;
+    try { map = JSON.parse(sessionStorage.getItem('quantitiesCache')||'null'); } catch(e) { map = null; }
+    if (!map) return;
+    Object.keys(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.type === 'number') { el.value = String(map[id]||0); }
+    });
+}
+
+function ensureProductsAutoRefresh(){
+    if (PRODUCTS_POLL_HANDLE) return;
+    PRODUCTS_POLL_HANDLE = setInterval(async () => {
+        if (!orderingEnabled) return;
+        try{
+            const r = await fetch('/api/products', { cache: 'no-cache' });
+            const j = await r.json();
+            if (!j.ok) return;
+            const newProducts = j.products || [];
+            const fp = computeProductsFingerprint(newProducts);
+            if (fp !== CLIENT_PRODUCTS_FINGERPRINT) {
+                // Changement détecté: re-rendre tout en préservant les quantités
+                captureCurrentQuantities();
+                CLIENT_PRODUCTS = newProducts;
+                CLIENT_PRODUCTS_FINGERPRINT = fp;
+                renderClientProducts(CLIENT_PRODUCTS);
+                restoreQuantitiesFromCache();
+                updateTotal();
+            }
+        }catch(e){ /* noop */ }
+    }, 10000); // 10s
 }
 
 // Toast notification function
