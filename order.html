@@ -11,7 +11,7 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#fff; padding:20px; padding-bottom:90px; line-height:1.6; min-height:100vh; }
-        .form-container { width:100%; max-width:950px; margin:0 auto; background:#fff; padding:35px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; }
+        .form-container { width:100%; max-width:950px; margin:0 auto; background:#fff; padding:1.5rem; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; }
         #clientOrderForm { width:100%; }
         h1 { color:#2c3e50; font-size:26px; font-weight:700; }
         .form-group { margin-bottom:25px; }
@@ -41,11 +41,29 @@
         .success { background-color:#d4edda; color:#155724; }
         .error { background-color:#f8d7da; color:#721c24; }
         @media (max-width:768px){ 
-            .form-container { margin:10px; padding:20px; }
+            .form-container { margin:10px; padding:1.5rem; }
             .d-flex.gap-2 { flex-direction:column; }
             h1 { font-size:20px; }
         }
         .container { max-width: 950px; }
+        /* Harmoniser l'accordéon produits avec l'admin */
+        #productGrid .accordion-item { 
+            border:1px solid #e9ecef; 
+            border-radius:12px; 
+            overflow:hidden; 
+            box-shadow:0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom:12px;
+            background:#fff;
+        }
+        #productGrid .accordion-button { 
+            background:linear-gradient(45deg,#f8f9fa,#e9ecef);
+            font-weight:600; 
+            color:#2d3748;
+        }
+        #productGrid .accordion-button:not(.collapsed){
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,0.125);
+        }
+        #productGrid .accordion-body { padding:16px; }
     </style>
 </head>
 <body>
