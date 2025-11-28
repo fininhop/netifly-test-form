@@ -25,4 +25,28 @@
     var modal = new bootstrap.Modal(el);
     modal.show();
   };
+  const confirmEl = document.getElementById('confirmModal');
+  const confirmYesBtn = document.getElementById('confirmModalYes');
+  let currentResolve = null;
+  if (confirmEl && window.bootstrap) {
+    const confirmModal = new bootstrap.Modal(confirmEl);
+    window.showConfirmModal = function(message){
+      return new Promise((resolve)=>{
+        currentResolve = resolve;
+        document.getElementById('confirmModalBody').textContent = message || 'Confirmer ?';
+        confirmModal.show();
+      });
+    };
+    if (confirmYesBtn) {
+      confirmYesBtn.addEventListener('click', ()=>{
+        if (currentResolve) currentResolve(true);
+        currentResolve = null;
+        confirmModal.hide();
+      });
+    }
+    confirmEl.addEventListener('hidden.bs.modal', ()=>{
+      if (currentResolve) currentResolve(false);
+      currentResolve = null;
+    });
+  }
 })();

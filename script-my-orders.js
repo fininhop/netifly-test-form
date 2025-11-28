@@ -109,7 +109,8 @@ function renderMyOrders(list){
             const order = (CURRENT_MY_ORDERS||[]).find(x => String(x.id||'') === String(id));
             const check = canCancelOrder(order);
             if (!check.ok) { showToast('⏳ Trop tard', check.info || 'Annulation impossible', 'warning'); return; }
-            if (!confirm('Confirmer l\'annulation de cette commande ?')) return;
+            const confirmed = await (window.showConfirmModal ? window.showConfirmModal("Êtes-vous sûr de vouloir annuler cette commande ?") : Promise.resolve(confirm('Confirmer l\'annulation de cette commande ?')));
+            if (!confirmed) return;
             try {
                 const stored = localStorage.getItem('currentUser');
                 let currentUser = null;
