@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const active = !!productActiveInput.checked;
                 const category = (productCategoryInput?.value || '').trim();
                 const sortOrderRaw = productSortOrderInput?.value;
-                const sortOrder = parseInt(sortOrderRaw, 10);
+                let sortOrder = parseInt(sortOrderRaw, 10);
                 if (!name || Number.isNaN(price) || Number.isNaN(unitWeight)) {
                     showToast('Champs requis', 'Vérifiez nom, prix et poids', 'warning');
                     return;
@@ -606,19 +606,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Catégorie requise', 'Veuillez renseigner une catégorie pour le produit', 'warning');
                     return;
                 }
-                // Vérifier unicité de la position dans la catégorie lors de l'édition
+                // Vérifier position et gérer cas de changement de catégorie
+                const currentProd = currentProducts.find(p => p.id === id);
+                const isSameCategory = currentProd && ((currentProd.category||'') === category);
+                const inTargetCat = currentProducts.filter(p => (p.category||'') === category);
+                let maxOrder = 0; inTargetCat.forEach(p => { const so = Number(p.sortOrder); if (Number.isFinite(so) && so > maxOrder) maxOrder = so; });
+                // Si aucune position fournie ET on change de catégorie, placer en fin automatiquement
+                if (Number.isNaN(sortOrder) && !isSameCategory) {
+                    sortOrder = maxOrder + 1;
+                }
                 if (!Number.isNaN(sortOrder)) {
                     if (sortOrder < 1) { showToast('Position invalide', 'La position doit être supérieure ou égale à 1.', 'warning'); return; }
-                    const countInCat = currentProducts.filter(p => (p.category||'') === category).length;
-                    if (sortOrder > countInCat) { // en édition, max = nombre d'éléments existants
-                        showToast('Position invalide', `La position ne peut pas dépasser ${countInCat}.`, 'warning');
+                    const countInCat = inTargetCat.length;
+                    const maxAllowed = isSameCategory ? countInCat : (countInCat + 1);
+                    if (sortOrder > maxAllowed) {
+                        showToast('Position invalide', `La position ne peut pas dépasser ${maxAllowed}.`, 'warning');
                         return;
                     }
-                    // Si la position est déjà utilisée dans la même catégorie ET que la catégorie n'a pas changé,
-                    // on effectue un échange d'ordre (swap) plutôt que de bloquer.
-                    const currentProd = currentProducts.find(p => p.id === id);
                     const dupProd = currentProducts.find(p => p.id !== id && (p.category||'') === category && typeof p.sortOrder === 'number' && p.sortOrder === sortOrder);
-                    const isSameCategory = currentProd && ((currentProd.category||'') === category);
                     if (dupProd && isSameCategory) {
                         const token = localStorage.getItem('adminToken');
                         const headers = { 'Content-Type': 'application/json', 'x-admin-token': token };
@@ -628,9 +633,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             await fetch('/api/products?id=' + encodeURIComponent(id), { method: 'PUT', headers, body: JSON.stringify(nonOrderPayload) });
 
                             // Calcul d'une valeur temporaire unique pour éviter l'unicité côté serveur
-                            const inCat = currentProducts.filter(p => (p.category||'') === category);
-                            let maxOrder = 0;
-                            inCat.forEach(p => { const so = Number(p.sortOrder); if (Number.isFinite(so) && so > maxOrder) maxOrder = so; });
                             const tempOrder = maxOrder + 1;
 
                             const oldOrder = Number(currentProd.sortOrder) || 0;
@@ -656,12 +658,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             showToast('Erreur', 'Impossible d\'échanger les positions. Réessayez.', 'error');
                             return;
                         }
+                    } else if (dupProd && !isSameCategory) {
+                        // Si on déplace vers une autre catégorie et que la position demandée est déjà prise,
+                        // on place automatiquement en fin pour éviter le conflit.
+                        sortOrder = maxOrder + 1;
                     }
                 }
                 const token = localStorage.getItem('adminToken');
                 try {
                     const payload = { name, price, unitWeight, active, category };
-                    if (!Number.isNaN(sortOrder)) payload.sortOrder = sortOrder; // blank keeps previous or server validation
+                    if (!Number.isNaN(sortOrder)) payload.sortOrder = sortOrder; // défini ci-dessus pour nouveaux cas
                     const resp = await fetch('/api/products?id=' + encodeURIComponent(id), {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
