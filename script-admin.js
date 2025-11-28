@@ -1570,13 +1570,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = u.email || '';
             const phone = u.phone || '';
             const emailHtml = email
-                ? `<div>📧 <a href="mailto:${email}" class="user-mail" data-value="${email}">${email}</a>
-                        <button type="button" class="btn btn-link btn-sm copy-btn" data-value="${email}">Copier</button>
+                ? `<div class="d-flex align-items-center justify-content-between gap-2">
+                        <div>📧 <a href="mailto:${email}" class="user-mail" data-value="${email}">${email}</a></div>
+                        <button type="button" class="btn btn-sm btn-outline-primary copy-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Copier l'email" data-value="${email}">📋</button>
                    </div>`
                 : `<div>📧 —</div>`;
             const phoneHtml = phone
-                ? `<div>📞 <a href="tel:${phone}" class="user-phone" data-value="${phone}">${phone}</a>
-                        <button type="button" class="btn btn-link btn-sm copy-btn" data-value="${phone}">Copier</button>
+                ? `<div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                        <div>📞 <a href="tel:${phone}" class="user-phone" data-value="${phone}">${phone}</a></div>
+                        <button type="button" class="btn btn-sm btn-outline-primary copy-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Copier le téléphone" data-value="${phone}">📋</button>
                    </div>`
                 : '';
             const details = `<div class="mt-2 small">${emailHtml}${phoneHtml}</div>`;
@@ -1608,7 +1610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     if (val) {
                         await navigator.clipboard.writeText(val);
-                        showToast('📋 Copié', 'Valeur copiée dans le presse-papiers', 'success');
+                        showToast('📋 Copié', 'Copié dans le presse-papiers', 'success');
                     }
                 } catch (err) {
                     console.error('Clipboard error:', err);
@@ -1620,6 +1622,11 @@ document.addEventListener('DOMContentLoaded', () => {
         adminUsersList.querySelectorAll('.user-item .user-mail, .user-item .user-phone').forEach(a => {
             a.addEventListener('click', (e) => { e.stopPropagation(); });
         });
+        // Initialiser tooltips Bootstrap pour nouveaux boutons
+        try {
+            const tooltipTriggerList = Array.from(adminUsersList.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(el => { try { new bootstrap.Tooltip(el); } catch(_) {/* noop */} });
+        } catch(e) { /* noop */ }
     }
 
     if (adminUserSearchQuery) {
