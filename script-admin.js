@@ -134,28 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusRow.appendChild(activeBadge);
                     const actions = document.createElement('div');
                     actions.className = 'd-flex justify-content-end gap-2 mt-2';
-                    const btnUp = document.createElement('button');
-                    btnUp.className = 'btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center';
-                    btnUp.setAttribute('data-action','move-up');
-                    btnUp.setAttribute('data-id', String(p.id));
-                    btnUp.setAttribute('data-category', String(p.category||''));
-                    btnUp.setAttribute('title','Monter');
-                    btnUp.style.width = '32px';
-                    btnUp.style.height = '32px';
-                    btnUp.style.padding = '0';
-                    btnUp.style.lineHeight = '1';
-                    btnUp.textContent = '▲';
-                    const btnDown = document.createElement('button');
-                    btnDown.className = 'btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center';
-                    btnDown.setAttribute('data-action','move-down');
-                    btnDown.setAttribute('data-id', String(p.id));
-                    btnDown.setAttribute('data-category', String(p.category||''));
-                    btnDown.setAttribute('title','Descendre');
-                    btnDown.style.width = '32px';
-                    btnDown.style.height = '32px';
-                    btnDown.style.padding = '0';
-                    btnDown.style.lineHeight = '1';
-                    btnDown.textContent = '▼';
                     const btnEdit = document.createElement('button');
                     btnEdit.className = 'btn btn-sm btn-outline-primary';
                     btnEdit.setAttribute('data-action', 'edit');
@@ -171,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     body.appendChild(weightEl);
                     body.appendChild(metaRow);
                     body.appendChild(statusRow);
-                    actions.appendChild(btnUp);
-                    actions.appendChild(btnDown);
                     actions.appendChild(btnEdit);
                     actions.appendChild(btnDelete);
                     body.appendChild(actions);
@@ -184,40 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             grid.appendChild(accordion);
-
-            async function swapSortOrderWithinCategory(catName, idA, idB) {
-                const prodA = currentProducts.find(p=>p.id===idA);
-                const prodB = currentProducts.find(p=>p.id===idB);
-                if (!prodA || !prodB) return false;
-                let aOrder = (typeof prodA.sortOrder==='number')?prodA.sortOrder:0;
-                let bOrder = (typeof prodB.sortOrder==='number')?prodB.sortOrder:0;
-                const inCat = currentProducts.filter(p => (p.category||'') === (prodA.category||''));
-                let maxOrder = 0;
-                inCat.forEach(p => { const so = Number(p.sortOrder); if (Number.isFinite(so) && so > maxOrder) maxOrder = so; });
-                const tempOrder = maxOrder + 1; // valeur temporaire pour éviter collision serveur
-                const token = localStorage.getItem('adminToken');
-                const headers = { 'Content-Type': 'application/json', 'x-admin-token': token };
-                try {
-                    showPageLoader('Ré-ordonnancement…');
-                    // Étape 1: libérer bOrder en décalant A vers une valeur temporaire unique
-                    let r = await fetch('/api/products?id='+encodeURIComponent(idA), { method:'PUT', headers, body: JSON.stringify({ sortOrder: tempOrder }) });
-                    let j = await r.json().catch(()=>({}));
-                    if (!r.ok || !j.ok) return false;
-                    // Étape 2: attribuer à B l'ancien ordre de A
-                    r = await fetch('/api/products?id='+encodeURIComponent(idB), { method:'PUT', headers, body: JSON.stringify({ sortOrder: aOrder }) });
-                    j = await r.json().catch(()=>({}));
-                    if (!r.ok || !j.ok) return false;
-                    // Étape 3: attribuer à A l'ancien ordre de B
-                    r = await fetch('/api/products?id='+encodeURIComponent(idA), { method:'PUT', headers, body: JSON.stringify({ sortOrder: bOrder }) });
-                    j = await r.json().catch(()=>({}));
-                    if (!r.ok || !j.ok) return false;
-                    // Update local cache
-                    prodB.sortOrder = aOrder;
-                    prodA.sortOrder = bOrder;
-                    return true;
-                } catch(e){ return false; }
-                finally { try { hidePageLoader(); } catch(e){} }
-            }
+            
 
             function rerenderCategoryRow(catName) {
                 const accId = 'adminProductsAccordion';
@@ -273,28 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusRow.appendChild(activeBadge);
                     const actions = document.createElement('div');
                     actions.className = 'd-flex justify-content-end gap-2 mt-2';
-                    const btnUp = document.createElement('button');
-                    btnUp.className = 'btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center';
-                    btnUp.setAttribute('data-action','move-up');
-                    btnUp.setAttribute('data-id', String(p.id));
-                    btnUp.setAttribute('data-category', String(p.category||''));
-                    btnUp.setAttribute('title','Monter');
-                    btnUp.style.width = '32px';
-                    btnUp.style.height = '32px';
-                    btnUp.style.padding = '0';
-                    btnUp.style.lineHeight = '1';
-                    btnUp.textContent = '▲';
-                    const btnDown = document.createElement('button');
-                    btnDown.className = 'btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center';
-                    btnDown.setAttribute('data-action','move-down');
-                    btnDown.setAttribute('data-id', String(p.id));
-                    btnDown.setAttribute('data-category', String(p.category||''));
-                    btnDown.setAttribute('title','Descendre');
-                    btnDown.style.width = '32px';
-                    btnDown.style.height = '32px';
-                    btnDown.style.padding = '0';
-                    btnDown.style.lineHeight = '1';
-                    btnDown.textContent = '▼';
                     const btnEdit = document.createElement('button');
                     btnEdit.className = 'btn btn-sm btn-outline-primary';
                     btnEdit.setAttribute('data-action', 'edit');
@@ -310,8 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     body.appendChild(weightEl);
                     body.appendChild(metaRow);
                     body.appendChild(statusRow);
-                    actions.appendChild(btnUp);
-                    actions.appendChild(btnDown);
                     actions.appendChild(btnEdit);
                     actions.appendChild(btnDelete);
                     body.appendChild(actions);
@@ -336,35 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (action === 'edit') {
                             openProductModal(prod);
                         }
-                        if (action === 'move-up' || action === 'move-down') {
-                            const actionsBar = e.currentTarget.closest('.d-flex');
-                            const inlineSpinner = document.createElement('span');
-                            inlineSpinner.className = 'spinner-border spinner-border-sm text-secondary ms-2';
-                            inlineSpinner.setAttribute('role','status');
-                            if (actionsBar) {
-                                actionsBar.querySelectorAll('button').forEach(b => b.disabled = true);
-                                actionsBar.appendChild(inlineSpinner);
-                            }
-                            const catNameLocal = (prod && prod.category) ? String(prod.category) : '';
-                            const inCat = currentProducts.filter(p => (p.category||'') === catNameLocal)
-                                .sort((a,b)=>{
-                                    const ca = (typeof a.sortOrder==='number')?a.sortOrder:0;
-                                    const cb = (typeof b.sortOrder==='number')?b.sortOrder:0;
-                                    if (ca !== cb) return ca - cb;
-                                    return String(a.name||'').localeCompare(String(b.name||''));
-                                });
-                            const idx = inCat.findIndex(x => x.id === id);
-                            if (idx === -1) return;
-                            let targetIdx = action === 'move-up' ? idx - 1 : idx + 1;
-                            if (targetIdx < 0 || targetIdx >= inCat.length) return; // cannot move
-                            const ok = await swapSortOrderWithinCategory(catNameLocal, inCat[idx].id, inCat[targetIdx].id);
-                            if (actionsBar) {
-                                actionsBar.querySelectorAll('button').forEach(b => b.disabled = false);
-                                inlineSpinner.remove();
-                            }
-                            if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); rerenderCategoryRow(catNameLocal); }
-                            else { showToast('Échec de ré-ordonnancement', 'Erreur', 'error'); }
-                        }
+                        
                     });
                 });
             }
@@ -385,35 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (action === 'edit') {
                         openProductModal(prod);
                     }
-                    if (action === 'move-up' || action === 'move-down') {
-                        const actionsBar = e.currentTarget.closest('.d-flex');
-                        const inlineSpinner = document.createElement('span');
-                        inlineSpinner.className = 'spinner-border spinner-border-sm text-secondary ms-2';
-                        inlineSpinner.setAttribute('role','status');
-                        if (actionsBar) {
-                            actionsBar.querySelectorAll('button').forEach(b => b.disabled = true);
-                            actionsBar.appendChild(inlineSpinner);
-                        }
-                        const catName = (prod && prod.category) ? String(prod.category) : '';
-                        const inCat = currentProducts.filter(p => (p.category||'') === catName)
-                            .sort((a,b)=>{
-                                const ca = (typeof a.sortOrder==='number')?a.sortOrder:0;
-                                const cb = (typeof b.sortOrder==='number')?b.sortOrder:0;
-                                if (ca !== cb) return ca - cb;
-                                return String(a.name||'').localeCompare(String(b.name||''));
-                            });
-                        const idx = inCat.findIndex(x => x.id === id);
-                        if (idx === -1) return;
-                        let targetIdx = action === 'move-up' ? idx - 1 : idx + 1;
-                        if (targetIdx < 0 || targetIdx >= inCat.length) return; // cannot move
-                        const ok = await swapSortOrderWithinCategory(catName, inCat[idx].id, inCat[targetIdx].id);
-                        if (actionsBar) {
-                            actionsBar.querySelectorAll('button').forEach(b => b.disabled = false);
-                            inlineSpinner.remove();
-                        }
-                        if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); rerenderCategoryRow(catName); }
-                        else { showToast('Échec de ré-ordonnancement', 'Erreur', 'error'); }
-                    }
+                    
                 });
             });
         }
