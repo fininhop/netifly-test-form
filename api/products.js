@@ -45,13 +45,32 @@ module.exports = async function handler(req, res) {
       if (!name || typeof price !== 'number' || typeof unitWeight !== 'number') {
         return res.status(400).json({ ok: false, error: 'Champs requis: name, price(number), unitWeight(number)' });
       }
+      const cat = (category ? String(category).trim() : '');
+      if (!cat) {
+        return res.status(400).json({ ok: false, error: 'Catégorie requise' });
+      }
+
+      let finalSortOrder;
+      if (typeof sortOrder === 'number' && !Number.isNaN(sortOrder)) {
+        finalSortOrder = sortOrder;
+      } else {
+        // Compute to appear first: take minimum existing sortOrder in category and minus one
+        const qsnap = await col.where('category', '==', cat).get();
+        let minSo = null;
+        qsnap.forEach(d => {
+          const so = Number((d.data() || {}).sortOrder || 0);
+          if (minSo === null || so < minSo) minSo = so;
+        });
+        finalSortOrder = (minSo === null) ? 0 : (minSo - 1);
+      }
+
       const doc = {
         name: String(name).trim(),
         price,
         unitWeight,
         active: active === undefined ? true : !!active,
-        category: category ? String(category).trim() : '',
-        sortOrder: typeof sortOrder === 'number' ? sortOrder : 0,
+        category: cat,
+        sortOrder: finalSortOrder,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
