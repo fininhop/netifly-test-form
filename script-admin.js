@@ -728,8 +728,49 @@ document.addEventListener('DOMContentLoaded', () => {
                         showToast('Position invalide', `La position ne peut pas dépasser ${countInCat}.`, 'warning');
                         return;
                     }
-                    const dup = currentProducts.some(p => p.id !== id && (p.category||'') === category && typeof p.sortOrder === 'number' && p.sortOrder === sortOrder);
-                    if (dup) { showToast('Position déjà utilisée', 'Choisissez une autre valeur de position ou laissez vide pour conserver.', 'warning'); return; }
+                    // Si la position est déjà utilisée dans la même catégorie ET que la catégorie n'a pas changé,
+                    // on effectue un échange d'ordre (swap) plutôt que de bloquer.
+                    const currentProd = currentProducts.find(p => p.id === id);
+                    const dupProd = currentProducts.find(p => p.id !== id && (p.category||'') === category && typeof p.sortOrder === 'number' && p.sortOrder === sortOrder);
+                    const isSameCategory = currentProd && ((currentProd.category||'') === category);
+                    if (dupProd && isSameCategory) {
+                        const token = localStorage.getItem('adminToken');
+                        const headers = { 'Content-Type': 'application/json', 'x-admin-token': token };
+                        try {
+                            // Mettre à jour d'abord les autres champs du produit courant (sans toucher à l'ordre)
+                            const nonOrderPayload = { name, price, unitWeight, active, category };
+                            await fetch('/api/products?id=' + encodeURIComponent(id), { method: 'PUT', headers, body: JSON.stringify(nonOrderPayload) });
+
+                            // Calcul d'une valeur temporaire unique pour éviter l'unicité côté serveur
+                            const inCat = currentProducts.filter(p => (p.category||'') === category);
+                            let maxOrder = 0;
+                            inCat.forEach(p => { const so = Number(p.sortOrder); if (Number.isFinite(so) && so > maxOrder) maxOrder = so; });
+                            const tempOrder = maxOrder + 1;
+
+                            const oldOrder = Number(currentProd.sortOrder) || 0;
+                            // Étape 1: déplacer le produit courant vers tempOrder
+                            let r = await fetch('/api/products?id='+encodeURIComponent(id), { method:'PUT', headers, body: JSON.stringify({ sortOrder: tempOrder }) });
+                            let j = await r.json().catch(()=>({}));
+                            if (!r.ok || !j.ok) throw new Error('Échec étape 1');
+                            // Étape 2: donner l'ancien ordre du produit courant au produit en conflit
+                            r = await fetch('/api/products?id='+encodeURIComponent(dupProd.id), { method:'PUT', headers, body: JSON.stringify({ sortOrder: oldOrder }) });
+                            j = await r.json().catch(()=>({}));
+                            if (!r.ok || !j.ok) throw new Error('Échec étape 2');
+                            // Étape 3: donner l'ordre souhaité au produit courant
+                            r = await fetch('/api/products?id='+encodeURIComponent(id), { method:'PUT', headers, body: JSON.stringify({ sortOrder }) });
+                            j = await r.json().catch(()=>({}));
+                            if (!r.ok || !j.ok) throw new Error('Échec étape 3');
+
+                            showToast('Succès', 'Position échangée avec succès', 'success');
+                            if (productModal) productModal.hide();
+                            loadProducts();
+                            return;
+                        } catch (err) {
+                            console.error('Erreur swap position:', err);
+                            showToast('Erreur', 'Impossible d\'échanger les positions. Réessayez.', 'error');
+                            return;
+                        }
+                    }
                 }
                 const token = localStorage.getItem('adminToken');
                 try {
