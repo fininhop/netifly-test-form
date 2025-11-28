@@ -771,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seasonOrderCountEl = document.getElementById('seasonOrderCount');
     const seasonTotalPriceEl = document.getElementById('seasonTotalPrice');
     const seasonAveragePriceEl = document.getElementById('seasonAveragePrice');
+    const seasonTotalWeightEl = document.getElementById('seasonTotalWeight');
     const allSeasonsStatsEl = document.getElementById('allSeasonsStats');
     const allSeasonsStatsBodyTbody = (function(){
         const el = document.querySelector('#allSeasonsStatsBody tbody');
@@ -789,10 +790,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const count = ordersForView.length;
         const total = ordersForView.reduce((s, o) => s + computeOrderTotal(o), 0);
+        const weightTotal = ordersForView.reduce((s, o) => {
+            return s + (o.items||[]).reduce((sw,it)=>{
+                const qty = Number(it.quantity)||0;
+                const uw = Number(it.unitWeight)||0;
+                return sw + qty * uw;
+            },0);
+        },0);
         const avg = count > 0 ? total / count : 0;
         seasonOrderCountEl.textContent = String(count);
         seasonTotalPriceEl.textContent = `€${total.toFixed(2)}`;
         seasonAveragePriceEl.textContent = `€${avg.toFixed(2)}`;
+        if (seasonTotalWeightEl) seasonTotalWeightEl.textContent = weightTotal.toFixed(3);
         seasonStatsEl.style.display = 'block';
     }
 
