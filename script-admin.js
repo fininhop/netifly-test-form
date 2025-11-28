@@ -1416,9 +1416,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         };
         const nowStr = new Date().toLocaleString('fr-FR');
+        const selectedSeason = currentSeasonFilter !== 'all' ? (currentSeasons.find(s => s.id === currentSeasonFilter) || null) : null;
+        const startStr = selectedSeason && selectedSeason.startDate ? new Date(selectedSeason.startDate).toLocaleDateString('fr-FR') : null;
+        const endStr = selectedSeason && selectedSeason.endDate ? new Date(selectedSeason.endDate).toLocaleDateString('fr-FR') : null;
+        const headerTitle = (selectedSeason && startStr && endStr)
+            ? `Commandes de ${startStr} au ${endStr}`
+            : `Commandes - ${seasonName}`;
         const docDefinition = {
             pageMargins: [40,60,40,40],
-            header: { columns: [ { text: `Commandes - ${seasonName}`, style: 'headerLeft' }, { text: nowStr, alignment: 'right', style: 'headerRight' } ], margin:[40,20,40,0] },
+            header: { columns: [ { text: headerTitle, style: 'headerLeft' }, { text: nowStr, alignment: 'right', style: 'headerRight' } ], margin:[40,20,40,0] },
             content: [
                 { text: `Total montant: €${grandTotalPrice.toFixed(2)}`, style: 'totals' },
                 { text: `Total poids: ${grandTotalWeight.toFixed(3)} kg`, style: 'totals' },
@@ -1543,25 +1549,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const items = filtered.map(u => {
             const name = u.name || (u.email ? u.email.split('@')[0] : '—');
-            const email = u.email || '—';
+            const email = u.email || '';
             const phone = u.phone || '';
-            const details = `<div class="mt-2 small"><div>📧 ${email}</div>${phone ? `<div>📞 ${phone}</div>` : ''}</div>`;
-            return `<a href="#" class="list-group-item list-group-item-action" data-user-id="${u.id}">
+            const emailHtml = email
+                ? `<div>📧 <a href="mailto:${email}" class="user-mail" data-value="${email}">${email}</a>
+                        <button type="button" class="btn btn-link btn-sm copy-btn" data-value="${email}">Copier</button>
+                   </div>`
+                : `<div>📧 —</div>`;
+            const phoneHtml = phone
+                ? `<div>📞 <a href="tel:${phone}" class="user-phone" data-value="${phone}">${phone}</a>
+                        <button type="button" class="btn btn-link btn-sm copy-btn" data-value="${phone}">Copier</button>
+                   </div>`
+                : '';
+            const details = `<div class="mt-2 small">${emailHtml}${phoneHtml}</div>`;
+            return `<div class="list-group-item list-group-item-action user-item" data-user-id="${u.id}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div><strong>${name}</strong></div>
-                            <span class="badge bg-secondary">Cliquer pour détails</span>
+                            <div class="me-2"><strong>${name}</strong></div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary user-toggle">Détails</button>
                         </div>
                         <div class="user-details d-none">${details}</div>
-                    </a>`;
+                    </div>`;
         }).join('');
         adminUsersList.innerHTML = items;
-        // Toggle details on click
-        adminUsersList.querySelectorAll('.list-group-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+        // Toggle details only when clicking the toggle button
+        adminUsersList.querySelectorAll('.user-item .user-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const details = item.querySelector('.user-details');
+                e.stopPropagation();
+                const item = e.currentTarget.closest('.user-item');
+                const details = item && item.querySelector('.user-details');
                 if (details) details.classList.toggle('d-none');
             });
+        });
+        // Copy buttons for email/phone
+        adminUsersList.querySelectorAll('.user-item .copy-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const val = e.currentTarget.getAttribute('data-value') || '';
+                try {
+                    if (val) {
+                        await navigator.clipboard.writeText(val);
+                        showToast('📋 Copié', 'Valeur copiée dans le presse-papiers', 'success');
+                    }
+                } catch (err) {
+                    console.error('Clipboard error:', err);
+                    showToast('❌ Erreur', 'Impossible de copier', 'error');
+                }
+            });
+        });
+        // Prevent details toggle when tapping links
+        adminUsersList.querySelectorAll('.user-item .user-mail, .user-item .user-phone').forEach(a => {
+            a.addEventListener('click', (e) => { e.stopPropagation(); });
         });
     }
 
