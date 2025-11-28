@@ -83,15 +83,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const headingId = `admin-head-${slug}`;
                 const collapseId = `admin-collapse-${slug}`;
                 const item = document.createElement('div');
-                item.className = 'accordion-item';
+                item.className = 'accordion-item border rounded-3 shadow-sm bg-white';
                 item.innerHTML = `
                     <h2 class="accordion-header" id="${headingId}">
-                        <button class="accordion-button ${idxCat>0 ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${idxCat===0}" aria-controls="${collapseId}">
+                        <button class="accordion-button ${idxCat>0 ? 'collapsed' : ''} bg-light fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${idxCat===0}" aria-controls="${collapseId}">
                             ${catName}
                         </button>
                     </h2>
                     <div id="${collapseId}" class="accordion-collapse collapse ${idxCat===0 ? 'show' : ''}" aria-labelledby="${headingId}" data-bs-parent="#${accId}">
-                        <div class="accordion-body">
+                        <div class="accordion-body py-3">
                             <div class="row g-3"></div>
                         </div>
                     </div>`;

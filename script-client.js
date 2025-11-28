@@ -233,15 +233,15 @@ function showToast(title, message, type = 'info') {
                 const headingId = `heading-${slug}`;
                 const collapseId = `collapse-${slug}`;
                 const item = document.createElement('div');
-                item.className = 'accordion-item';
+                item.className = 'accordion-item border rounded-3 shadow-sm bg-white';
                 item.innerHTML = `
                     <h2 class="accordion-header" id="${headingId}">
-                        <button class="accordion-button ${index>0 ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${index===0}" aria-controls="${collapseId}">
+                        <button class="accordion-button ${index>0 ? 'collapsed' : ''} bg-light fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${index===0}" aria-controls="${collapseId}">
                             ${cat}
                         </button>
                     </h2>
                     <div id="${collapseId}" class="accordion-collapse collapse ${index===0 ? 'show' : ''}" aria-labelledby="${headingId}" data-bs-parent="#${accordionId}">
-                        <div class="accordion-body">
+                        <div class="accordion-body py-3">
                             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3"></div>
                         </div>
                     </div>`;
