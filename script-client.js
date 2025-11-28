@@ -171,7 +171,7 @@ function renderClientProducts(products){
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
                         <h6 class="card-title fw-bold text-primary mb-2">${p.name}</h6>
-                        <p class="card-text text-success fw-semibold fs-5 mb-1">€ ${Number(p.price).toFixed(2)}</p>
+                            <p class="card-text text-success fw-semibold fs-6 mb-1">€ ${Number(p.price).toFixed(2)}</p>
                         <p class="text-muted small mb-3">${Number(p.unitWeight).toFixed(3)} kg / unité</p>
                         <div class="d-flex align-items-center justify-content-between">
                             <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="changeQuantity('${id}', -1)" style="width:36px;height:36px;padding:0;">−</button>
