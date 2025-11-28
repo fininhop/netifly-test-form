@@ -597,4 +597,30 @@ document.addEventListener('DOMContentLoaded', () => {
             hidePageLoader();
         }
     });
+
+    // Soumission directe depuis le panier offcanvas
+    const offcanvasSubmitBtn = document.getElementById('offcanvasSubmitBtn');
+    function offcanvasCanSubmit(){
+        const hasProducts = Array.from(document.querySelectorAll('#productGrid input[type="number"]')).some(inp => (parseInt(inp.value)||0) > 0);
+        const seasonOk = !!document.getElementById('seasonSelect')?.value;
+        return hasProducts && seasonOk && orderingEnabled;
+    }
+    function updateOffcanvasSubmitState(){
+        if (!offcanvasSubmitBtn) return;
+        offcanvasSubmitBtn.disabled = !offcanvasCanSubmit();
+    }
+    if (offcanvasSubmitBtn){
+        offcanvasSubmitBtn.addEventListener('click', (e)=>{
+            e.preventDefault();
+            if (!offcanvasCanSubmit()) { showToast('Incomplet', 'Sélectionnez produits et saison.', 'warning'); return; }
+            form.requestSubmit();
+        });
+        // Mettre à jour l'état quand panier ou saison change
+        document.getElementById('seasonSelect')?.addEventListener('change', updateOffcanvasSubmitState);
+        // Sur chaque input quantité
+        document.addEventListener('input', (ev)=>{
+            if (ev.target && ev.target.matches('#productGrid input[type="number"]')) updateOffcanvasSubmitState();
+        });
+        updateOffcanvasSubmitState();
+    }
 });
