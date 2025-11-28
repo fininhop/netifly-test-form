@@ -31,14 +31,32 @@ function showToast(title, message, type = 'info') {
 document.addEventListener('DOMContentLoaded', async () => {
     let ORDERS_FP = '';
     let AUTO_REFRESH_HANDLE = null;
-    function computeFingerprint(list){
+    function renderMyOrders(list) {
         try { return JSON.stringify((list||[]).map(o=>({id:String(o.id||''),ca:String(o.createdAt||''),d:String(o.date||''),len:(o.items||[]).length})).sort((a,b)=>a.id.localeCompare(b.id))); } catch(e){ return ''; }
     }
     showPageLoader('Chargement des commandes…');
     const container = document.getElementById('ordersList');
     const logout = document.getElementById('logoutLink');
 
-    const stored = localStorage.getItem('currentUser');
+        const items = list.map(o => {
+            const endDateStr = o.date || o.seasonEndDate || '';
+            let canCancel = false;
+            let cancelInfo = '';
+            if (endDateStr) {
+                const now = new Date();
+                const end = new Date(endDateStr);
+                const diffMs = end.getTime() - now.getTime();
+                const diffHours = diffMs / (1000 * 60 * 60);
+                if (diffHours >= 48) {
+                    canCancel = true;
+                } else if (diffHours > 0) {
+                    cancelInfo = `Annulation impossible: moins de 48h avant la fin de la saison (${Math.floor(diffHours)}h restantes).`;
+                } else {
+                    cancelInfo = 'Annulation impossible: la saison est terminée.';
+                }
+            } else {
+                cancelInfo = 'Date de fin de saison inconnue.';
+            }
     let currentUser = null;
     try { currentUser = stored ? JSON.parse(stored) : null; } catch(e) { currentUser = null; }
 
@@ -51,35 +69,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         logout.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('currentUser'); window.location.href = 'index.html'; });
     }
 
-    async function fetchAndRender() {
+                                ${canCancel ? `<button class="btn btn-sm btn-outline-danger" data-action="cancel" data-id="${o.id}">Annuler</button>` : `<span class="badge bg-secondary">Non annulable</span>`}
         const response = await fetch('/api/get-orders-by-user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: currentUser.userId, email: currentUser.email }),
+                        ${(!canCancel && cancelInfo) ? `<div class="mt-2 alert alert-warning py-2 mb-0">${cancelInfo}</div>` : ''}
             cache: 'no-cache'
         });
 
         let result = null;
         try { result = await response.json(); } catch (e) { result = null; }
 
-        if (!response.ok) {
+        container.querySelectorAll('button[data-action="cancel"]').forEach(btn => {
             showToast('❌ Erreur', 'Erreur lors de la récupération: ' + (result && result.message ? result.message : response.statusText), 'error');
             container.innerHTML = '<div class="alert alert-warning">Impossible de charger les commandes.</div>';
-            return;
-        }
-
-        const orders = (result && result.orders) ? result.orders : [];
-        ORDERS_FP = computeFingerprint(orders);
-        if (!orders.length) {
-            container.innerHTML = '<div class="alert alert-light text-center py-5"><h5>Aucune commande trouvée</h5><p class="text-muted">Vous n\'avez pas encore passé de commande.</p><a href="index.html" class="btn btn-primary">Commander maintenant</a></div>';
-            return;
-        }
-
-        container.innerHTML = '';
-        const NAME_PRICES = window.NAME_PRICES || {};
-        const NAME_WEIGHTS = window.NAME_WEIGHTS || {};
-        function normalizeKey(s){ return String(s||'').trim().toLowerCase(); }
-        function resolveMap(map, key){
+                if (!id) return;
+                // Double-check 48h rule client-side using current order data
+                const order = (CURRENT_MY_ORDERS || []).find(x => String(x.id||'') === String(id));
+                const endDateStr = order && (order.date || order.seasonEndDate);
+                if (!endDateStr) { showToast('❌ Erreur', 'Date de fin inconnue pour cette commande.', 'error'); return; }
+                const now = new Date();
+                const end = new Date(endDateStr);
+                const diffHours = (end.getTime() - now.getTime()) / (1000*60*60);
+                if (diffHours < 48) {
+                    showToast('⏳ Trop tard', 'Annulation impossible: moins de 48h avant la fin de la saison.', 'warning');
+                    return;
+                }
+                if (!confirm('Confirmer l\'annulation de cette commande ?')) return;
+                try {
+                    const r = await fetch(`/api/delete-order?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                    const j = await r.json().catch(()=>({}));
+                    if (r.ok && j && j.ok) {
+                        showToast('✅ Annulée', 'Votre commande a été annulée.', 'success');
+                        await fetchMyOrders();
+                    } else {
+                        showToast('❌ Erreur', (j && j.message) ? j.message : 'Annulation impossible', 'error');
+                    }
+                } catch(err) {
+                    console.error('Annulation', err);
+                    showToast('❌ Erreur réseau', 'Réessayez plus tard.', 'error');
+                }
             const nk = normalizeKey(key);
             if (nk in map) return map[nk];
             // chercher correspondance insensible à la casse parmi les clés existantes
