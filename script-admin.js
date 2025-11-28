@@ -563,6 +563,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 // Vérifier unicité de la position dans la catégorie lors de la création
                 if (!Number.isNaN(sortOrder)) {
+                    const countInCat = currentProducts.filter(p => (p.category||'') === category).length;
+                    if (sortOrder > countInCat + 1) {
+                        return showMessageModal('Position invalide', `La position ne peut pas dépasser ${countInCat + 1}.`, 'warning');
+                    }
                     const dup = currentProducts.some(p => (p.category||'') === category && typeof p.sortOrder === 'number' && p.sortOrder === sortOrder);
                     if (dup) {
                         return showMessageModal('Position déjà utilisée', 'Un autre produit dans cette catégorie a déjà cette position. Choisissez une autre valeur ou laissez vide pour placer en premier.', 'warning');
@@ -650,6 +654,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 // Vérifier unicité de la position dans la catégorie lors de l'édition
                 if (!Number.isNaN(sortOrder)) {
+                    const countInCat = currentProducts.filter(p => (p.category||'') === category).length;
+                    if (sortOrder > countInCat) { // en édition, max = nombre d'éléments existants
+                        showToast('Position invalide', `La position ne peut pas dépasser ${countInCat}.`, 'warning');
+                        return;
+                    }
                     const dup = currentProducts.some(p => p.id !== id && (p.category||'') === category && typeof p.sortOrder === 'number' && p.sortOrder === sortOrder);
                     if (dup) { showToast('Position déjà utilisée', 'Choisissez une autre valeur de position ou laissez vide pour conserver.', 'warning'); return; }
                 }
