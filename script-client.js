@@ -170,7 +170,7 @@ function renderClientProducts(products){
             <div class="product-section">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="mb-0">${cat}</h5>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">Basculer</button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="true" data-role="toggle-arrow">▲</button>
                 </div>
                 <div id="${collapseId}" class="collapse show">
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3"></div>
@@ -196,6 +196,13 @@ function renderClientProducts(products){
                 </div>`;
             row.appendChild(colDiv);
         });
+        // Update arrow on collapse show/hide
+        const collapseEl = wrapper.querySelector('#'+collapseId);
+        const toggleBtn = wrapper.querySelector('button[data-role="toggle-arrow"]');
+        if (collapseEl && toggleBtn) {
+            collapseEl.addEventListener('show.bs.collapse', ()=>{ toggleBtn.textContent = '▲'; toggleBtn.setAttribute('aria-expanded','true'); });
+            collapseEl.addEventListener('hide.bs.collapse', ()=>{ toggleBtn.textContent = '▼'; toggleBtn.setAttribute('aria-expanded','false'); });
+        }
         productGrid.appendChild(wrapper);
     });
 }
