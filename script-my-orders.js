@@ -59,7 +59,15 @@ function renderMyOrders(list){
     const container = document.getElementById('ordersList');
     if (!container) return;
     if (!list || list.length === 0) { container.innerHTML = '<div class="alert alert-info">Vous n\'avez pas encore de commandes.</div>'; return; }
-    const html = list.map(o => {
+    const now = new Date().getTime();
+    const upcoming = [];
+    const past = [];
+    (list||[]).forEach(o => {
+        const end = new Date(o.date || o.seasonEndDate || 0).getTime();
+        if (end && end < now) past.push(o); else upcoming.push(o);
+    });
+
+    function cardHtml(o, readonly){
         const total = (o.items||[]).reduce((s,it)=> s + (Number(it.price||0) * Number(it.quantity||0)), 0);
         const lines = (o.items||[]).map(it => `${it.quantity} × ${it.name} (€${Number(it.price||0).toFixed(2)})`).join('<br>');
         const { ok, info } = canCancelOrder(o);
@@ -73,16 +81,28 @@ function renderMyOrders(list){
                         </div>
                         <div class="text-end">
                             <div class="fw-bold">Total: €${total.toFixed(2)}</div>
-                            ${ok ? `<button class="btn btn-sm btn-outline-danger" data-action="cancel" data-id="${o.id}">Annuler</button>` : `<span class="badge bg-secondary">Non annulable</span>`}
+                            ${readonly ? '' : (ok ? `<button class="btn btn-sm btn-outline-danger" data-action="cancel" data-id="${o.id}">Annuler</button>` : `<span class="badge bg-secondary">Non annulable</span>`)}
                         </div>
                     </div>
                     <hr>
                     <div class="small">${lines}</div>
-                    ${(!ok && info) ? `<div class="mt-2 alert alert-warning py-2 mb-0">${info}</div>` : ''}
+                    ${(!readonly && !ok && info) ? `<div class="mt-2 alert alert-warning py-2 mb-0">${info}</div>` : ''}
                 </div>
             </div>`;
-    }).join('');
+    }
+
+    let html = '';
+    if (upcoming.length) {
+        html += `<div class="mb-2"><h5 class="mb-0">À venir</h5><small class="text-muted">Commandes encore modifiables selon règles</small></div>`;
+        html += upcoming.map(o => cardHtml(o, false)).join('');
+    }
+    if (past.length) {
+        html += `<div class="mt-4 mb-2"><h5 class="mb-0">Passées</h5><small class="text-muted">Historique des commandes (non modifiables)</small></div>`;
+        html += past.map(o => cardHtml(o, true)).join('');
+    }
     container.innerHTML = html;
+
+    // Bind cancel buttons only for upcoming section
     container.querySelectorAll('button[data-action="cancel"]').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const id = e.currentTarget.getAttribute('data-id');
