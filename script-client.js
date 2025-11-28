@@ -208,6 +208,10 @@ function renderClientProducts(products){
 }
 
 async function loadClientProducts(){
+    const productGrid = document.getElementById('productGrid');
+    if (productGrid) {
+        productGrid.innerHTML = '<div class="d-flex justify-content-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement…</span></div></div>';
+    }
     try{
         const r = await fetch('/api/products');
         const j = await r.json();

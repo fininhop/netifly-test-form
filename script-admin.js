@@ -50,11 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Produits: chargement et CRUD
         let currentProducts = [];
         async function loadProducts() {
+            const grid = document.getElementById('productsGrid');
+            if (grid) {
+                grid.innerHTML = '<div class="d-flex justify-content-center py-4 w-100"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement…</span></div></div>';
+            }
             const resp = await fetch('/api/products');
             const data = await resp.json();
             if (!data.ok) return;
             currentProducts = data.products || [];
-            const grid = document.getElementById('productsGrid');
             if (!grid) return;
             grid.innerHTML = '';
             // Group products by category for admin view and render as accordion
@@ -230,6 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function loadCategories() {
             try {
+                const listEl = document.getElementById('categoriesList');
+                if (listEl) {
+                    listEl.innerHTML = '<div class="d-flex justify-content-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement…</span></div></div>';
+                }
                 const r = await fetch('/api/products?categories=1');
                 const j = await r.json();
                 if (!j.ok) return [];
