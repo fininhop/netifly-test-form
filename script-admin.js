@@ -191,19 +191,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!prodA || !prodB) return false;
                 let aOrder = (typeof prodA.sortOrder==='number')?prodA.sortOrder:0;
                 let bOrder = (typeof prodB.sortOrder==='number')?prodB.sortOrder:0;
+                const inCat = currentProducts.filter(p => (p.category||'') === (prodA.category||''));
+                let maxOrder = 0;
+                inCat.forEach(p => { const so = Number(p.sortOrder); if (Number.isFinite(so) && so > maxOrder) maxOrder = so; });
+                const tempOrder = maxOrder + 1; // valeur temporaire pour éviter collision serveur
                 const token = localStorage.getItem('adminToken');
                 const headers = { 'Content-Type': 'application/json', 'x-admin-token': token };
                 try {
                     showPageLoader('Ré-ordonnancement…');
-                    const r1 = await fetch('/api/products?id='+encodeURIComponent(idA), { method:'PUT', headers, body: JSON.stringify({ sortOrder: bOrder }) });
-                    const j1 = await r1.json().catch(()=>({}));
-                    if (!r1.ok || !j1.ok) return false;
-                    const r2 = await fetch('/api/products?id='+encodeURIComponent(idB), { method:'PUT', headers, body: JSON.stringify({ sortOrder: aOrder }) });
-                    const j2 = await r2.json().catch(()=>({}));
-                    if (!r2.ok || !j2.ok) return false;
+                    // Étape 1: libérer bOrder en décalant A vers une valeur temporaire unique
+                    let r = await fetch('/api/products?id='+encodeURIComponent(idA), { method:'PUT', headers, body: JSON.stringify({ sortOrder: tempOrder }) });
+                    let j = await r.json().catch(()=>({}));
+                    if (!r.ok || !j.ok) return false;
+                    // Étape 2: attribuer à B l'ancien ordre de A
+                    r = await fetch('/api/products?id='+encodeURIComponent(idB), { method:'PUT', headers, body: JSON.stringify({ sortOrder: aOrder }) });
+                    j = await r.json().catch(()=>({}));
+                    if (!r.ok || !j.ok) return false;
+                    // Étape 3: attribuer à A l'ancien ordre de B
+                    r = await fetch('/api/products?id='+encodeURIComponent(idA), { method:'PUT', headers, body: JSON.stringify({ sortOrder: bOrder }) });
+                    j = await r.json().catch(()=>({}));
+                    if (!r.ok || !j.ok) return false;
                     // Update local cache
-                    prodA.sortOrder = bOrder;
                     prodB.sortOrder = aOrder;
+                    prodA.sortOrder = bOrder;
                     return true;
                 } catch(e){ return false; }
                 finally { try { hidePageLoader(); } catch(e){} }
