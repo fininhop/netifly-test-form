@@ -128,36 +128,10 @@ function renderClientProducts(products){
     const activeProducts = (products || []).filter(p => p.active !== false);
     productGrid.innerHTML = '';
 
-    const categories = Array.from(new Set(activeProducts.map(p => (p.category || '').trim())));
-    const meaningfulCategories = categories.filter(c => c);
-    const hasMultipleCategories = meaningfulCategories.length > 1;
-
     function slugify(s){
         return String(s || 'autres').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
     }
 
-    if (!hasMultipleCategories) {
-        activeProducts.forEach(p => {
-            const id = `prod_${p.id}`;
-            const colDiv = document.createElement('div');
-            colDiv.className = 'col';
-            colDiv.innerHTML = `
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="card-title fw-bold text-primary mb-2">${p.name}</h6>
-                        <p class="card-text text-success fw-semibold fs-5 mb-1">€ ${Number(p.price).toFixed(2)}</p>
-                        <p class="text-muted small mb-3">${Number(p.unitWeight).toFixed(3)} kg / unité</p>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="changeQuantity('${id}', -1)" style="width:36px;height:36px;padding:0;">−</button>
-                            <input type="number" id="${id}" data-name="${p.name}" data-price="${p.price}" data-unitweight="${p.unitWeight}" class="form-control form-control-sm text-center mx-2" value="0" min="0" style="max-width:70px;" oninput="updateTotal()" />
-                            <button type="button" class="btn btn-sm btn-outline-success rounded-circle" onclick="changeQuantity('${id}', 1)" style="width:36px;height:36px;padding:0;">+</button>
-                        </div>
-                    </div>
-                </div>`;
-            productGrid.appendChild(colDiv);
-        });
-        return;
-    }
 
     // Group by category and render collapsible sections
     const byCategory = new Map();
@@ -168,18 +142,27 @@ function renderClientProducts(products){
     });
 
     Array.from(byCategory.entries()).sort((a,b)=> String(a[0]).localeCompare(String(b[0]))).forEach(([cat, list]) => {
+        // sort inside category by sortOrder then name
+        list.sort((a,b)=>{
+            const sa = (typeof a.sortOrder==='number')?a.sortOrder:0;
+            const sb = (typeof b.sortOrder==='number')?b.sortOrder:0;
+            if (sa !== sb) return sa - sb;
+            return String(a.name||'').localeCompare(String(b.name||''));
+        });
         const collapseId = `cat_${slugify(cat)}`;
-        const section = document.createElement('div');
-        section.className = 'mb-3';
-        section.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">${cat}</h5>
-                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">Basculer</button>
-            </div>
-            <div id="${collapseId}" class="collapse show">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3"></div>
+        const wrapper = document.createElement('div');
+        wrapper.className = 'col-12';
+        wrapper.innerHTML = `
+            <div class="product-section">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">${cat}</h5>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">Basculer</button>
+                </div>
+                <div id="${collapseId}" class="collapse show">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3"></div>
+                </div>
             </div>`;
-        const row = section.querySelector('.row');
+        const row = wrapper.querySelector('.row');
         list.forEach(p => {
             const id = `prod_${p.id}`;
             const colDiv = document.createElement('div');
@@ -199,7 +182,7 @@ function renderClientProducts(products){
                 </div>`;
             row.appendChild(colDiv);
         });
-        productGrid.appendChild(section);
+        productGrid.appendChild(wrapper);
     });
 }
 
