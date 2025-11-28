@@ -307,6 +307,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             openProductModal(prod);
                         }
                         if (action === 'move-up' || action === 'move-down') {
+                            const actionsBar = e.currentTarget.closest('.d-flex');
+                            const inlineSpinner = document.createElement('span');
+                            inlineSpinner.className = 'spinner-border spinner-border-sm text-secondary ms-2';
+                            inlineSpinner.setAttribute('role','status');
+                            if (actionsBar) {
+                                actionsBar.querySelectorAll('button').forEach(b => b.disabled = true);
+                                actionsBar.appendChild(inlineSpinner);
+                            }
                             const catNameLocal = (prod && prod.category) ? String(prod.category) : '';
                             const inCat = currentProducts.filter(p => (p.category||'') === catNameLocal)
                                 .sort((a,b)=>{
@@ -320,6 +328,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             let targetIdx = action === 'move-up' ? idx - 1 : idx + 1;
                             if (targetIdx < 0 || targetIdx >= inCat.length) return; // cannot move
                             const ok = await swapSortOrderWithinCategory(catNameLocal, inCat[idx].id, inCat[targetIdx].id);
+                            if (actionsBar) {
+                                actionsBar.querySelectorAll('button').forEach(b => b.disabled = false);
+                                inlineSpinner.remove();
+                            }
                             if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); rerenderCategoryRow(catNameLocal); }
                             else { showToast('Échec de ré-ordonnancement', 'Erreur', 'error'); }
                         }
@@ -344,6 +356,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         openProductModal(prod);
                     }
                     if (action === 'move-up' || action === 'move-down') {
+                        const actionsBar = e.currentTarget.closest('.d-flex');
+                        const inlineSpinner = document.createElement('span');
+                        inlineSpinner.className = 'spinner-border spinner-border-sm text-secondary ms-2';
+                        inlineSpinner.setAttribute('role','status');
+                        if (actionsBar) {
+                            actionsBar.querySelectorAll('button').forEach(b => b.disabled = true);
+                            actionsBar.appendChild(inlineSpinner);
+                        }
                         const catName = (prod && prod.category) ? String(prod.category) : '';
                         const inCat = currentProducts.filter(p => (p.category||'') === catName)
                             .sort((a,b)=>{
@@ -357,6 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         let targetIdx = action === 'move-up' ? idx - 1 : idx + 1;
                         if (targetIdx < 0 || targetIdx >= inCat.length) return; // cannot move
                         const ok = await swapSortOrderWithinCategory(catName, inCat[idx].id, inCat[targetIdx].id);
+                        if (actionsBar) {
+                            actionsBar.querySelectorAll('button').forEach(b => b.disabled = false);
+                            inlineSpinner.remove();
+                        }
                         if (ok) { showToast('Ordre mis à jour', 'Succès', 'success'); rerenderCategoryRow(catName); }
                         else { showToast('Échec de ré-ordonnancement', 'Erreur', 'error'); }
                     }
