@@ -185,10 +185,10 @@ function renderClientProducts(products){
         wrapper.className = 'col-12';
         wrapper.innerHTML = `
             <div class="product-section">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="category-header d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" data-role="toggle-arrow" style="width:32px;height:32px;line-height:1;">▼</button>
-                        <h5 class="mb-0 category-toggle" role="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor:pointer;">${cat}</h5>
+                        <button class="btn btn-sm btn-outline-secondary rounded-circle shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" data-role="toggle-arrow" style="width:36px;height:36px;line-height:1;">▼</button>
+                        <h5 class="mb-0 category-toggle fw-semibold" role="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor:pointer;">${cat}</h5>
                     </div>
                 </div>
                 <div id="${collapseId}" class="collapse">

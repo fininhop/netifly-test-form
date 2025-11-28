@@ -68,6 +68,31 @@
         .offcanvas-header { border-bottom:1px solid #e9ecef; }
         #basketItemsList .list-group-item { border:1px solid #e9ecef; border-radius:8px; margin-bottom:8px; }
         #floatingBasket { box-shadow:0 -4px 16px rgba(0,0,0,0.12); }
+        /* Catégories produits (hover/focus) */
+        .category-header {
+            border:1px solid #e9ecef;
+            border-radius:12px;
+            padding:10px 14px;
+            background:linear-gradient(45deg,#fdfdfd,#f7f9fa);
+            transition:background .25s, box-shadow .25s, transform .25s, border-color .25s;
+            position:relative;
+        }
+        .category-header:hover {
+            background:linear-gradient(45deg,#eef6ff,#e3f2fd);
+            border-color:#cfe2ff;
+            box-shadow:0 4px 16px rgba(0,123,255,0.15);
+            transform:translateY(-2px);
+        }
+        .category-header:focus-within {
+            background:linear-gradient(45deg,#e9f5ff,#d8ecff);
+            border-color:#91caff;
+            box-shadow:0 0 0 0.2rem rgba(13,110,253,.25);
+        }
+        .category-header .category-toggle { color:#0d3b66; }
+        .category-header .category-toggle:hover { text-decoration:underline; }
+        .category-header button[data-role="toggle-arrow"] { transition:background .25s, transform .25s; }
+        .category-header button[data-role="toggle-arrow"]:hover { background:#0d6efd; color:#fff; }
+        .category-header button[data-role="toggle-arrow"][aria-expanded="true"] { background:#0d6efd; color:#fff; }
     </style>
 </head>
 <body>
