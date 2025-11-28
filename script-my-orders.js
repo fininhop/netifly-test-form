@@ -111,7 +111,13 @@ function renderMyOrders(list){
             if (!check.ok) { showToast('⏳ Trop tard', check.info || 'Annulation impossible', 'warning'); return; }
             if (!confirm('Confirmer l\'annulation de cette commande ?')) return;
             try {
-                const r = await fetch(`/api/delete-order?id=${encodeURIComponent(id)}`, { method:'DELETE' });
+                const stored = localStorage.getItem('currentUser');
+                let currentUser = null;
+                try { currentUser = stored ? JSON.parse(stored) : null; } catch(e) { currentUser = null; }
+                const r = await fetch('/api/cancel-order', {
+                    method:'POST', headers:{ 'Content-Type':'application/json' },
+                    body: JSON.stringify({ orderId: id, email: currentUser && currentUser.email })
+                });
                 const j = await r.json().catch(()=>({}));
                 if (r.ok && j && j.ok) { showToast('✅ Annulée', 'Votre commande a été annulée.', 'success'); await fetchMyOrders(); }
                 else { showToast('❌ Erreur', (j && j.message) ? j.message : 'Annulation impossible', 'error'); }
