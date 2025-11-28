@@ -228,9 +228,86 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        async function loadCategories() {
+            try {
+                const r = await fetch('/api/products?categories=1');
+                const j = await r.json();
+                if (!j.ok) return [];
+                return j.categories || [];
+            } catch(e){ return []; }
+        }
+
+        function renderCategoryOptions(selectEl, categories, selected) {
+            if (!selectEl) return;
+            selectEl.innerHTML = '';
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = 'Choisir une catégorie…';
+            selectEl.appendChild(defaultOpt);
+            categories.sort((a,b)=> String(a.name||'').localeCompare(String(b.name||''))).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = c.name;
+                if (selected && selected === c.name) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
         function wireProductCreateForm() {
             const form = document.getElementById('createProductForm');
             if (!form) return;
+            const catSelect = document.getElementById('prodCategory');
+            const addCatBtn = document.getElementById('addCategoryBtn');
+            // initial categories load
+            loadCategories().then(cats => renderCategoryOptions(catSelect, cats));
+            if (addCatBtn) {
+                addCatBtn.addEventListener('click', async ()=>{
+                    const categoriesModalEl = document.getElementById('categoriesModal');
+                    const categoriesModal = categoriesModalEl ? new bootstrap.Modal(categoriesModalEl) : null;
+                    if (!categoriesModal) return;
+                    // Load and render list
+                    const cats = await loadCategories();
+                    const listEl = document.getElementById('categoriesList');
+                    listEl.innerHTML = cats.map(c => `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${c.name}</span><button class="btn btn-sm btn-outline-danger" data-action="delete-cat" data-name="${c.name}" ${c.productCount>0?'disabled title="Catégorie non vide"':''}>Supprimer</button></div>`).join('');
+                    categoriesModal.show();
+                });
+            }
+            // wire categories modal actions
+            const createCategoryBtn = document.getElementById('createCategoryBtn');
+            if (createCategoryBtn) {
+                createCategoryBtn.addEventListener('click', async ()=>{
+                    const name = document.getElementById('newCategoryName').value.trim();
+                    if (!name) return showToast('Nom requis', 'Entrez un nom de catégorie', 'warning');
+                    const token = localStorage.getItem('adminToken');
+                    const r = await fetch('/api/products?category=1', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-admin-token': token }, body: JSON.stringify({ name }) });
+                    const j = await r.json();
+                    if (j.ok) {
+                        showToast('Catégorie', 'Ajoutée', 'success');
+                        document.getElementById('newCategoryName').value = '';
+                        const cats = await loadCategories();
+                        renderCategoryOptions(catSelect, cats);
+                        const listEl = document.getElementById('categoriesList');
+                        listEl.innerHTML = cats.map(c => `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${c.name}</span><button class="btn btn-sm btn-outline-danger" data-action="delete-cat" data-name="${c.name}" ${c.productCount>0?'disabled title="Catégorie non vide"':''}>Supprimer</button></div>`).join('');
+                    } else showToast('Erreur', j.error || 'Échec ajout catégorie', 'error');
+                });
+            }
+            const categoriesList = document.getElementById('categoriesList');
+            if (categoriesList) {
+                categoriesList.addEventListener('click', async (e)=>{
+                    const btn = e.target.closest('button[data-action="delete-cat"]');
+                    if (!btn) return;
+                    const name = btn.getAttribute('data-name');
+                    const token = localStorage.getItem('adminToken');
+                    const r = await fetch('/api/products?category='+encodeURIComponent(name), { method:'DELETE', headers:{ 'x-admin-token': token } });
+                    const j = await r.json();
+                    if (j.ok) {
+                        showToast('Catégorie', 'Supprimée', 'success');
+                        const cats = await loadCategories();
+                        renderCategoryOptions(catSelect, cats);
+                        categoriesList.innerHTML = cats.map(c => `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${c.name}</span><button class="btn btn-sm btn-outline-danger" data-action="delete-cat" data-name="${c.name}" ${c.productCount>0?'disabled title="Catégorie non vide"':''}>Supprimer</button></div>`).join('');
+                    } else showToast('Erreur', j.error || 'Échec suppression catégorie', 'error');
+                });
+            }
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('prodName').value.trim();
@@ -255,6 +332,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     form.reset();
                     showToast('Produit ajouté', 'Succès');
                     loadProducts();
+                    // refresh categories options
+                    const cats = await loadCategories();
+                    renderCategoryOptions(catSelect, cats);
                 } else showToast(j.error || 'Erreur', 'Erreur');
             });
         }
@@ -267,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const productUnitWeightInput = document.getElementById('productUnitWeight');
         const productActiveInput = document.getElementById('productActive');
         const productCategoryInput = document.getElementById('productCategory');
+        const addCategoryBtnEdit = document.getElementById('addCategoryBtnEdit');
         const productSortOrderInput = document.getElementById('productSortOrder');
         const saveProductBtn = document.getElementById('saveProductBtn');
         let productModal = null;
@@ -279,14 +360,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 productModal = new bootstrap.Modal(productModalEl);
             }
             if (!productModal) { showToast('Erreur', 'Le module modal n\'est pas chargé', 'error'); return; }
+            // Load categories and set selection
+            loadCategories().then(cats => {
+                renderCategoryOptions(productCategoryInput, cats, prod && prod.category ? String(prod.category) : '');
+            });
             productIdInput.value = prod && prod.id ? String(prod.id) : '';
             productNameInput.value = prod && prod.name ? String(prod.name) : '';
             productPriceInput.value = prod && typeof prod.price === 'number' ? String(prod.price) : '';
             productUnitWeightInput.value = prod && typeof prod.unitWeight === 'number' ? String(prod.unitWeight) : '';
             productActiveInput.checked = !!(prod && prod.active !== false);
-            if (productCategoryInput) productCategoryInput.value = prod && prod.category ? String(prod.category) : '';
             if (productSortOrderInput) productSortOrderInput.value = (prod && typeof prod.sortOrder === 'number') ? String(prod.sortOrder) : '';
             productModal.show();
+        }
+
+        if (addCategoryBtnEdit) {
+            addCategoryBtnEdit.addEventListener('click', async ()=>{
+                const categoriesModalEl = document.getElementById('categoriesModal');
+                const categoriesModal = categoriesModalEl ? new bootstrap.Modal(categoriesModalEl) : null;
+                if (!categoriesModal) return;
+                const cats = await loadCategories();
+                const listEl = document.getElementById('categoriesList');
+                listEl.innerHTML = cats.map(c => `<div class="list-group-item d-flex justify-content-between align-items-center"><span>${c.name}</span><button class="btn btn-sm btn-outline-danger" data-action="delete-cat" data-name="${c.name}" ${c.productCount>0?'disabled title="Catégorie non vide"':''}>Supprimer</button></div>`).join('');
+                categoriesModal.show();
+            });
         }
 
         if (saveProductBtn) {
