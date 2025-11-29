@@ -303,6 +303,14 @@ html[data-theme="dark"] .badge.bg-info { color: #0b1020 !important; }
 /* General muted text slightly lighter in dark */
 html[data-theme="dark"] .text-muted { color: rgba(229,231,235,0.70) !important; }
 
+/* Page-specific common elements: ensure readable text */
+.form-group label,
+.form-label,
+.total-amount,
+.welcome-text {
+  color: var(--text) !important;
+}
+
 /* Season header block should not be white in dark */
 .season-header { background: var(--panel) !important; color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
 .season-title { color: var(--text) !important; }
