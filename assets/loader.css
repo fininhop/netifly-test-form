@@ -1,5 +1,5 @@
 /* Global loader overlay and spinner */
-#pageLoader { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+#pageLoader { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1040; }
 #pageLoader.hidden { display: none; }
 .loader-spinner { width: 56px; height: 56px; border: 6px solid var(--border); border-top-color: var(--primary, #3498db); border-radius: 50%; animation: spin 0.9s linear infinite; }
 .loader-text { margin-top: 12px; color: var(--text); font-weight: 500; text-align: center; }
@@ -7,4 +7,4 @@
 
 /* Button spinner */
 .btn-loading { position: relative; pointer-events: none; opacity: 0.75; }
-.btn-loading::after { content: ""; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.btn-loading::after { content: ""; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border: 2px solid var(--primary-contrast); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }

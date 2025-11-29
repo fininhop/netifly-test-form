@@ -29,4 +29,6 @@
     } catch(e){}
   };
   window.addEventListener('load', function(){ hidePageLoader(); });
+  // Ensure loader never blocks modal interactions
+  document.addEventListener('show.bs.modal', function(){ try{ hidePageLoader(); }catch(e){} });
 })();
