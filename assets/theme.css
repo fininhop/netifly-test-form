@@ -204,3 +204,22 @@ html[data-theme="dark"] .alert-secondary {
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
+
+/* Modal title and close button contrast */
+.modal-header .modal-title { color: var(--text) !important; }
+.btn-close { filter: invert( var(--btn-close-invert, 0) ); }
+html[data-theme="dark"] .btn-close { --btn-close-invert: 1; }
+
+/* Modal backdrop in dark mode */
+.modal-backdrop { background-color: #000 !important; }
+.modal-backdrop.show { opacity: .6 !important; }
+
+/* Buttons: ensure outline variants readable in dark */
+html[data-theme="dark"] .btn-outline-secondary {
+  color: var(--muted) !important;
+  border-color: var(--muted) !important;
+}
+html[data-theme="dark"] .btn-outline-secondary:hover {
+  background: var(--muted) !important;
+  color: var(--primary-contrast) !important;
+}
