@@ -181,7 +181,6 @@ function renderClientProducts(products){
                     <div class="d-flex align-items-center gap-2">
                         <span class="arrow-indicator" data-role="toggle-arrow" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid #ced4da;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);font-size:16px;">▼</span>
                         <h5 class="mb-0 category-toggle fw-semibold" style="cursor:pointer;">${cat}</h5>
-                        <span class="badge bg-secondary rounded-pill" data-role="category-count">0</span>
                     </div>
                 </div>
                 <div id="${collapseId}" class="collapse">
@@ -239,7 +238,7 @@ function renderClientProducts(products){
     // Show category controls if present
     const controls = document.getElementById('categoryControls');
     if (controls) controls.style.display = byCategory.size > 0 ? 'flex' : 'none';
-    updateCategoryCounts();
+    // Removed category count badges
 }
 
 async function loadClientProducts(){
@@ -420,25 +419,11 @@ function updateTotal() {
         offcanvasTotal.textContent = totalPrice.toFixed(2);
     }
     try { if (window.updateOffcanvasSubmitState) window.updateOffcanvasSubmitState(); } catch(e){}
-    try { updateCategoryCounts(); } catch(e){}
+    // Category count badges removed
 }
 
-// Met à jour le badge du nombre d'articles sélectionnés par catégorie
-function updateCategoryCounts(){
-    document.querySelectorAll('#productGrid .product-section').forEach(section => {
-        const collapseEl = section.querySelector('.collapse');
-        const countBadge = section.querySelector('[data-role="category-count"]');
-        if (!collapseEl || !countBadge) return;
-        const inputs = Array.from(collapseEl.querySelectorAll('input[type="number"]'));
-        const totalOptions = inputs.length;
-        let selected = 0;
-        inputs.forEach(inp => { selected += (parseInt(inp.value) || 0); });
-        countBadge.textContent = `${selected}/${totalOptions}`;
-        countBadge.title = `Sélectionnés / Options disponibles`;
-        countBadge.classList.toggle('bg-primary', selected > 0);
-        countBadge.classList.toggle('bg-secondary', selected === 0);
-    });
-}
+    // Removed category count badges and related logic
+    // updateCategoryCounts(); // This line is removed as well
 
 // Contrôles "Tout ouvrir/Tout fermer"
 document.addEventListener('click', (ev)=>{
