@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (addCatBtn) {
                 addCatBtn.addEventListener('click', async ()=>{
                     const categoriesModalEl = document.getElementById('categoriesModal');
-                    const categoriesModal = categoriesModalEl ? new bootstrap.Modal(categoriesModalEl) : null;
+                    const categoriesModal = (categoriesModalEl && window.bootstrap && window.bootstrap.Modal) ? new bootstrap.Modal(categoriesModalEl) : null;
                     if (!categoriesModal) return;
                     // Load and render list
                     const cats = await loadCategories();
@@ -557,12 +557,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const saveProductBtn = document.getElementById('saveProductBtn');
         let productModal = null;
         if (productModalEl && window.bootstrap) {
-            productModal = new bootstrap.Modal(productModalEl);
+            if (window.bootstrap && window.bootstrap.Modal) productModal = new bootstrap.Modal(productModalEl);
         }
 
         function openProductModal(prod) {
             if (!productModal && window.bootstrap && productModalEl) {
-                productModal = new bootstrap.Modal(productModalEl);
+                if (window.bootstrap && window.bootstrap.Modal) productModal = new bootstrap.Modal(productModalEl);
             }
             if (!productModal) { showToast('Erreur', 'Le module modal n\'est pas chargé', 'error'); return; }
             // Load categories and set selection
@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addCategoryBtnEdit) {
             addCategoryBtnEdit.addEventListener('click', async ()=>{
                 const categoriesModalEl = document.getElementById('categoriesModal');
-                const categoriesModal = categoriesModalEl ? new bootstrap.Modal(categoriesModalEl) : null;
+                const categoriesModal = (categoriesModalEl && window.bootstrap && window.bootstrap.Modal) ? new bootstrap.Modal(categoriesModalEl) : null;
                 if (!categoriesModal) return;
                 const cats = await loadCategories();
                 const listEl = document.getElementById('categoriesList');
@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seasonFilter = document.getElementById('seasonFilter');
     const newSeasonBtn = document.getElementById('newSeasonBtn');
     const seasonModalEl = document.getElementById('seasonModal');
-    const seasonModal = seasonModalEl ? new bootstrap.Modal(seasonModalEl) : null;
+    const seasonModal = (seasonModalEl && window.bootstrap && window.bootstrap.Modal) ? new bootstrap.Modal(seasonModalEl) : null;
     const saveSeasonBtn = document.getElementById('saveSeasonBtn');
     const seasonForm = document.getElementById('seasonForm');
     const seasonIdInput = document.getElementById('seasonId');
@@ -977,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Modal-based edit
         const modalEl = document.getElementById('editModal');
-        const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+        const modal = (modalEl && window.bootstrap && window.bootstrap.Modal) ? new bootstrap.Modal(modalEl) : null;
         const editOrderId = document.getElementById('editOrderId');
         const editDate = document.getElementById('editDate');
         const saveEditBtn = document.getElementById('saveEditBtn');
