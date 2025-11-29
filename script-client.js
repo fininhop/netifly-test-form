@@ -238,7 +238,7 @@ function renderClientProducts(products){
     // Show category controls if present
     const controls = document.getElementById('categoryControls');
     if (controls) controls.style.display = byCategory.size > 0 ? 'flex' : 'none';
-    // Removed category count badges
+    updateCategoryCounts();
 }
 
 async function loadClientProducts(){
@@ -400,7 +400,7 @@ function updateTotal() {
                                 <strong>${item.name}</strong><br>
                                 <small class="text-muted">€${item.price.toFixed(2)} / unité</small>
                             </div>
-                            <span class="badge bg-primary rounded-pill">€${item.total.toFixed(2)}</span>
+                            <span class="fw-semibold">€${item.total.toFixed(2)}</span>
                         </div>
                         <div class="d-flex align-items-center justify-content-end gap-2 mt-2">
                             <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="basketChangeQuantityById('${item.inputId}', -1)" style="width:32px;height:32px;padding:0;">−</button>
@@ -419,11 +419,11 @@ function updateTotal() {
         offcanvasTotal.textContent = totalPrice.toFixed(2);
     }
     try { if (window.updateOffcanvasSubmitState) window.updateOffcanvasSubmitState(); } catch(e){}
-    // Category count badges removed
+    try { updateCategoryCounts(); } catch(e){}
 }
 
-    // Removed category count badges and related logic
-    // updateCategoryCounts(); // This line is removed as well
+// Met à jour le badge du nombre d'articles sélectionnés par catégorie
+function updateCategoryCounts(){ /* badges supprimés */ }
 
 // Contrôles "Tout ouvrir/Tout fermer"
 document.addEventListener('click', (ev)=>{
