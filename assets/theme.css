@@ -105,6 +105,12 @@ html[data-theme="dark"] .toast .toast-header {
 
 /* Floating UI like toasts should stack above without blocking page globally */
 .toast { z-index: 1060; }
+/* Toast body/background theming */
+.toast, .toast-body {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
 
 /* Fix Bootstrap accordion button layering in dark */
 .accordion-button {
