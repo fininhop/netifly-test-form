@@ -212,6 +212,7 @@ html[data-theme="dark"] .alert-secondary {
   border-color: var(--border) !important;
 }
 .offcanvas-header { background-color: var(--panel) !important; color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
+.offcanvas-header.bg-light, .offcanvas-header.bg-white { background-color: var(--panel) !important; color: var(--text) !important; }
 
 /* Modal title and close button contrast */
 .modal-header .modal-title { color: var(--text) !important; }
