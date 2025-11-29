@@ -190,6 +190,7 @@ function renderClientProducts(products){
                     <div class="d-flex align-items-center gap-2">
                         <span class="arrow-indicator" data-role="toggle-arrow" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid #ced4da;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);font-size:16px;">▼</span>
                         <h5 class="mb-0 category-toggle fw-semibold" style="cursor:pointer;">${cat}</h5>
+                        <span class="badge bg-secondary rounded-pill" data-role="category-count">0</span>
                     </div>
                 </div>
                 <div id="${collapseId}" class="collapse">
@@ -244,6 +245,10 @@ function renderClientProducts(products){
         }
         productGrid.appendChild(wrapper);
     });
+    // Show category controls if present
+    const controls = document.getElementById('categoryControls');
+    if (controls) controls.style.display = byCategory.size > 0 ? 'flex' : 'none';
+    updateCategoryCounts();
 }
 
 async function loadClientProducts(){
@@ -424,7 +429,40 @@ function updateTotal() {
         offcanvasTotal.textContent = totalPrice.toFixed(2);
     }
     try { if (window.updateOffcanvasSubmitState) window.updateOffcanvasSubmitState(); } catch(e){}
+    try { updateCategoryCounts(); } catch(e){}
 }
+
+// Met à jour le badge du nombre d'articles sélectionnés par catégorie
+function updateCategoryCounts(){
+    document.querySelectorAll('#productGrid .product-section').forEach(section => {
+        const collapseEl = section.querySelector('.collapse');
+        const countBadge = section.querySelector('[data-role="category-count"]');
+        if (!collapseEl || !countBadge) return;
+        let count = 0;
+        collapseEl.querySelectorAll('input[type="number"]').forEach(inp => {
+            count += (parseInt(inp.value) || 0);
+        });
+        countBadge.textContent = String(count);
+        countBadge.classList.toggle('bg-primary', count > 0);
+        countBadge.classList.toggle('bg-secondary', count === 0);
+    });
+}
+
+// Contrôles "Tout ouvrir/Tout fermer"
+document.addEventListener('click', (ev)=>{
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    if (target.id === 'expandAllCategories'){
+        document.querySelectorAll('#productGrid .collapse').forEach(el => {
+            bootstrap.Collapse.getOrCreateInstance(el).show();
+        });
+    }
+    if (target.id === 'collapseAllCategories'){
+        document.querySelectorAll('#productGrid .collapse').forEach(el => {
+            bootstrap.Collapse.getOrCreateInstance(el).hide();
+        });
+    }
+});
 
 // Trouver l'input produit par id
 function getProductInputById(id){
@@ -460,7 +498,7 @@ function basketRemoveItemById(id){
 }
 
 // Vider le panier (toutes quantités à 0)
-function clearBasket(){
+async function clearBasket(){
     const hasAny = Array.from(document.querySelectorAll('#productGrid input[type="number"]')).some(input => (parseInt(input.value)||0) > 0);
     if (!hasAny) return;
     const okClear = await (window.showConfirmModal ? window.showConfirmModal('Vider le panier ? Toutes les quantités seront remises à zéro.') : Promise.resolve(confirm('Vider le panier ? Toutes les quantités seront remises à zéro.')));
