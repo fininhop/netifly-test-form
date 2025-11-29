@@ -223,3 +223,28 @@ html[data-theme="dark"] .btn-outline-secondary:hover {
   background: var(--muted) !important;
   color: var(--primary-contrast) !important;
 }
+
+/* Arrow indicator styling adjusted for dark mode */
+.arrow-indicator {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+  color: var(--text) !important;
+}
+
+/* Reduce opacity for helper texts in dark for readability */
+html[data-theme="dark"] .page-subtitle, html[data-theme="dark"] .form-text {
+  color: rgba(229, 231, 235, 0.75) !important;
+}
+
+/* Table body/footer and borders in dark */
+.table tfoot, .table td, .table tbody tr { background-color: var(--card) !important; }
+.table-sm th, .table-sm td { border-color: var(--border) !important; }
+.table-responsive { background-color: var(--card) !important; }
+
+/* Order card header in dark */
+.order-card .order-header {
+  background-color: var(--panel) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+.order-card .order-title, .order-card .order-date { color: var(--text) !important; }
