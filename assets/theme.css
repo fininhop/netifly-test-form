@@ -241,6 +241,8 @@ html[data-theme="dark"] .page-subtitle, html[data-theme="dark"] .form-text {
 .table tfoot, .table td, .table tbody tr { background-color: var(--card) !important; }
 .table-sm th, .table-sm td { border-color: var(--border) !important; }
 .table-responsive { background-color: var(--card) !important; }
+/* Slightly lighten small table text in dark for readability */
+html[data-theme="dark"] .table.table-sm td, html[data-theme="dark"] .table.table-sm th { color: rgba(229,231,235,0.88) !important; }
 
 /* Order card header in dark */
 .order-card .order-header {
@@ -248,3 +250,9 @@ html[data-theme="dark"] .page-subtitle, html[data-theme="dark"] .form-text {
   border-bottom: 1px solid var(--border) !important;
 }
 .order-card .order-title, .order-card .order-date { color: var(--text) !important; }
+/* Ensure info badge text is readable in dark */
+html[data-theme="dark"] .badge.bg-info { color: #0b1020 !important; }
+/* Offcanvas title in dark */
+.offcanvas-title { color: var(--text) !important; }
+/* General muted text slightly lighter in dark */
+html[data-theme="dark"] .text-muted { color: rgba(229,231,235,0.70) !important; }
