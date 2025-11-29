@@ -147,3 +147,27 @@ html[data-theme="dark"] .alert-warning {
 .bg-light { background-color: var(--panel) !important; }
 .bg-white { background-color: var(--card) !important; }
 .text-dark { color: var(--text) !important; }
+
+/* Forms - inputs/selects/textarea in dark mode */
+.form-control, .form-select, .form-check-input, .input-group-text, .form-floating label {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+.form-control::placeholder { color: var(--muted) !important; }
+.form-check-input:checked { background-color: var(--primary) !important; border-color: var(--primary) !important; }
+.form-select option { background-color: var(--card); color: var(--text); }
+
+/* List groups and tables */
+.list-group, .list-group-item { background-color: var(--card) !important; color: var(--text) !important; }
+.list-group-item.active { background-color: var(--primary) !important; color: var(--primary-contrast) !important; border-color: var(--primary) !important; }
+.table { color: var(--text) !important; }
+.table thead, .table th { background-color: var(--panel) !important; }
+.table-striped > tbody > tr:nth-of-type(odd) { --bs-table-accent-bg: var(--panel) !important; }
+
+/* Offcanvas and modal content */
+.offcanvas, .offcanvas-body, .offcanvas-header, .modal-content, .modal-header, .modal-footer {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
