@@ -4,37 +4,28 @@
 // de la commande à l'API Vercel (/api/save-order).
 // =======================================================
 
-// Définition du nom unique de l'application
+// Définition du nom unique de l'application (Firebase optionnel)
 const APP_NAME = 'CommandeDePain'; 
 
-let db;
-let ordersCollection;
+let db = null;
+let ordersCollection = null;
 
-// 1. Initialiser l'application avec un nom unique UNIQUEMENT si elle n'existe pas
-if (!firebase.apps.some(app => app.name === APP_NAME)) {
+// Initialisation Firebase (optionnelle). Le site fonctionne via API même sans Firebase côté client.
+(function initFirebaseIfAvailable(){
+    if (typeof window === 'undefined' || typeof window.firebase === 'undefined') return;
     try {
-        // Initialisation nommée
-        firebase.initializeApp(firebaseConfig, APP_NAME);
-        console.log(`Firebase initialisé avec succès sous le nom '${APP_NAME}'.`);
+        if (!firebase.apps.some(app => app.name === APP_NAME)) {
+            firebase.initializeApp(firebaseConfig, APP_NAME);
+            console.log(`Firebase initialisé avec succès sous le nom '${APP_NAME}'.`);
+        }
+        const appInstance = firebase.app(APP_NAME);
+        db = firebase.firestore(appInstance);
+        ordersCollection = db.collection('orders');
     } catch (error) {
-        console.error("Erreur lors de l'initialisation de Firebase:", error);
+        console.warn('Firebase non disponible côté client, utilisation des APIs serveur uniquement.');
+        db = null; ordersCollection = null;
     }
-} 
-
-// 2. Récupérer l'instance de l'application nommée pour Firestore
-try {
-    // Récupère l'instance de l'application nommée
-    const appInstance = firebase.app(APP_NAME); 
-    db = firebase.firestore(appInstance);
-    ordersCollection = db.collection("orders"); 
-    
-    // Mettre à jour la ligne d'affichage d'erreur précédente
-    // (L'ancienne ligne 'MonAppPain' était probablement une erreur de copier-coller)
-    
-} catch (error) {
-    // C'est ici que l'erreur de connexion à Firestore sera capturée si elle existe
-    console.error("Erreur lors de la récupération de l'instance de Firestore:", error);
-}
+})();
 
 // ---------------------------------------------------------------------
 // L'ANCIENNE INITIALISATION EN DOUBLE A ÉTÉ SUPPRIMÉE ICI.
