@@ -1659,7 +1659,7 @@ document.addEventListener('DOMContentLoaded', () => {
         listEl.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
         let data;
         try {
-            const resp = await fetch('/api/delivery-points');
+            const resp = await fetch(window.location.origin + '/api/delivery-points');
             console.log('Réponse brute du fetch:', resp);
             data = await parseApiResponse(resp);
             console.log('Résultat du parseApiResponse:', data);
