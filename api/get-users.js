@@ -4,6 +4,10 @@ const admin = require('firebase-admin');
 if (!admin.apps.length) {
     try {
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        // Fix private_key formatting for Firebase
+        if (serviceAccount.private_key) {
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
         admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     } catch (e) {
         console.error('Erreur initialisation Admin SDK (get-users):', e.message);
