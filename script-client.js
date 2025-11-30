@@ -629,7 +629,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function offcanvasCanSubmit(){
         const hasProducts = Array.from(document.querySelectorAll('#productGrid input[type="number"]')).some(inp => (parseInt(inp.value)||0) > 0);
         const seasonOk = !!document.getElementById('seasonSelect')?.value;
-        return hasProducts && seasonOk && orderingEnabled;
+        const deliveryPointOk = !!document.getElementById('deliveryPointSelect')?.value;
+        return hasProducts && seasonOk && deliveryPointOk && orderingEnabled;
     }
     function updateOffcanvasSubmitState(){
         if (!offcanvasSubmitBtn) return;
@@ -645,6 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // Mettre à jour l'état quand panier ou saison change
         document.getElementById('seasonSelect')?.addEventListener('change', updateOffcanvasSubmitState);
+        document.getElementById('deliveryPointSelect')?.addEventListener('change', updateOffcanvasSubmitState);
         // Sur chaque input quantité
         document.addEventListener('input', (ev)=>{
             if (ev.target && ev.target.matches('#productGrid input[type="number"]')) updateOffcanvasSubmitState();
@@ -652,3 +654,87 @@ document.addEventListener('DOMContentLoaded', () => {
         updateOffcanvasSubmitState();
     }
 });
+
+// Ajout : Variables pour les points de livraison
+let availableDeliveryPoints = [];
+
+// Charger les points de livraison pour la saison sélectionnée
+async function loadDeliveryPointsForSeason(seasonId) {
+    const deliveryPointSelect = document.getElementById('deliveryPointSelect');
+    deliveryPointSelect.innerHTML = '<option value="">Sélectionnez un point de livraison...</option>';
+    deliveryPointSelect.disabled = true;
+    if (!seasonId) return;
+    try {
+        const response = await fetch(`/api/delivery-points?seasonId=${encodeURIComponent(seasonId)}`);
+        const result = await response.json();
+        if (response.ok && result.deliveryPoints) {
+            availableDeliveryPoints = result.deliveryPoints;
+            if (availableDeliveryPoints.length > 0) {
+                availableDeliveryPoints.forEach(point => {
+                    const option = document.createElement('option');
+                    option.value = point.id;
+                    option.textContent = point.name;
+                    deliveryPointSelect.appendChild(option);
+                });
+                deliveryPointSelect.disabled = false;
+            } else {
+                deliveryPointSelect.innerHTML = '<option value="">Aucun point disponible pour cette saison</option>';
+                deliveryPointSelect.disabled = true;
+            }
+        } else {
+            deliveryPointSelect.innerHTML = '<option value="">Erreur chargement points</option>';
+            deliveryPointSelect.disabled = true;
+        }
+    } catch (error) {
+        deliveryPointSelect.innerHTML = '<option value="">Erreur réseau</option>';
+        deliveryPointSelect.disabled = true;
+    }
+}
+
+// Mettre à jour les points de livraison quand la saison change
+const seasonSelect = document.getElementById('seasonSelect');
+if (seasonSelect) {
+    seasonSelect.addEventListener('change', (e) => {
+        loadDeliveryPointsForSeason(e.target.value);
+    });
+}
+
+// Initialiser les points de livraison au chargement de la saison
+function afterSeasonLoaded() {
+    const selectedSeasonId = document.getElementById('seasonSelect')?.value;
+    loadDeliveryPointsForSeason(selectedSeasonId);
+}
+
+// Patch la fin de loadSeasons pour appeler afterSeasonLoaded
+// ...dans loadSeasons(), après setOrderingAvailability(true); ajouter :
+// afterSeasonLoaded();
+
+// Patch la soumission du formulaire pour inclure le point de livraison
+form.addEventListener('submit', async (e) => {
+    // ...code existant...
+    // Après vérification de la saison sélectionnée :
+    const deliveryPointSelect = document.getElementById('deliveryPointSelect');
+    const selectedDeliveryPointId = deliveryPointSelect?.value;
+    const selectedDeliveryPoint = availableDeliveryPoints.find(p => p.id === selectedDeliveryPointId);
+    if (!selectedDeliveryPoint) {
+        showToast('Point de livraison requis', 'Veuillez sélectionner un point de livraison.', 'warning');
+        return;
+    }
+    // Ajout dans orderData :
+    orderData.deliveryPointId = selectedDeliveryPoint.id;
+    orderData.deliveryPointName = selectedDeliveryPoint.name;
+    // ...reste inchangé...
+});
+
+// Patch la soumission offcanvas pour vérifier le point de livraison
+function offcanvasCanSubmit(){
+    const hasProducts = Array.from(document.querySelectorAll('#productGrid input[type="number"]')).some(inp => (parseInt(inp.value)||0) > 0);
+    const seasonOk = !!document.getElementById('seasonSelect')?.value;
+    const deliveryPointOk = !!document.getElementById('deliveryPointSelect')?.value;
+    return hasProducts && seasonOk && deliveryPointOk && orderingEnabled;
+}
+function updateOffcanvasSubmitState(){
+    if (!offcanvasSubmitBtn) return;
+    offcanvasSubmitBtn.disabled = !offcanvasCanSubmit();
+}
+document.getElementById('deliveryPointSelect')?.addEventListener('change', updateOffcanvasSubmitState);
