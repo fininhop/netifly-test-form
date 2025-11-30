@@ -8,7 +8,7 @@ if (!admin.apps.length) {
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
         // Fix private_key formatting for Firebase
         if (serviceAccount.private_key) {
-            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n').replace(/\n/g, '\n');
         }
         admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
         global.db = admin.firestore();

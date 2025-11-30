@@ -25,7 +25,7 @@ if (!admin.apps.length) {
             serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
             // Fix private_key formatting for Firebase
             if (serviceAccount.private_key) {
-                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n').replace(/\n/g, '\n');
             }
             console.log('[delete-order.js] Service account parsed successfully, private_key formatted');
         } catch (parseErr) {
