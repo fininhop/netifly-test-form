@@ -1674,6 +1674,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `).join('');
+        listEl.innerHTML += '<pre style="background:#fff;color:#333;padding:8px;border-radius:6px;">' + JSON.stringify(deliveryPoints, null, 2) + '</pre>';
         // Bind actions
         listEl.querySelectorAll('button[data-action]').forEach(btn => {
             btn.addEventListener('click', async (e) => {
