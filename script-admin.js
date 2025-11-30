@@ -1325,40 +1325,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (saveSeasonBtn && seasonModal) {
         saveSeasonBtn.addEventListener('click', async () => {
             const token = localStorage.getItem('adminToken');
-            if (!token) { showToast('❌ Erreur', 'Token admin manquant', 'error'); return; }
-
-            const payload = {
-                name: (seasonNameInput.value || '').trim(),
-                startDate: (seasonStartInput.value || '').trim(),
-                endDate: (seasonEndInput.value || '').trim(),
-                description: (seasonDescInput.value || '').trim()
-            };
-
-            if (!payload.name || !payload.startDate || !payload.endDate) {
-                showToast('⚠️ Champs requis', 'Nom, début et fin sont requis', 'warning');
+            const id = document.getElementById('seasonId').value;
+            const name = document.getElementById('seasonName').value.trim();
+            const startDate = document.getElementById('seasonStart').value;
+            const endDate = document.getElementById('seasonEnd').value;
+            const description = document.getElementById('seasonDescription').value.trim();
+            const deliveryPointId = document.getElementById('seasonDeliveryPoint').value;
+            if (!name || !startDate || !endDate || !deliveryPointId) {
+                showToast('Erreur', 'Tous les champs obligatoires doivent être remplis', 'error');
                 return;
             }
-
-            const id = (seasonIdInput.value || '').trim();
+            const payload = { name, startDate, endDate, description, deliveryPointId };
+            if (id) payload.id = id;
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/seasons?seasonId=${encodeURIComponent(id)}` : '/api/seasons';
-            try {
-                const resp = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-                    body: JSON.stringify(payload)
-                });
-                const jr = await resp.json().catch(() => null);
-                if (resp.ok) {
-                    showToast('✅ Succès', id ? 'Saison mise à jour' : 'Saison créée', 'success');
-                    seasonModal.hide();
-                    fetchSeasons(token);
-                } else {
-                    showToast('❌ Erreur', (jr && jr.message) ? jr.message : 'Échec enregistrement saison', 'error');
-                }
-            } catch (err) {
-                console.error('Erreur save saison:', err);
-                showToast('❌ Erreur réseau', 'Impossible d’enregistrer la saison', 'error');
+            const resp = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+                body: JSON.stringify(payload)
+            });
+            const jr = await resp.json();
+            if (resp.ok) {
+                showToast('Succès', id ? 'Saison modifiée' : 'Saison créée', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('seasonModal')).hide();
+                // Recharger les saisons
+                if (typeof fetchSeasons === 'function') fetchSeasons(token);
+            } else {
+                showToast('Erreur', jr.message || 'Enregistrement impossible', 'error');
             }
         });
     }
@@ -1653,4 +1646,105 @@ document.addEventListener('DOMContentLoaded', () => {
             try { await fetchUsers(); } finally { hidePageLoader(); }
         });
     }
+
+    // --- Points de livraison ---
+    let deliveryPoints = [];
+    async function loadDeliveryPoints() {
+        const listEl = document.getElementById('deliveryPointsList');
+        if (!listEl) return;
+        listEl.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+        const resp = await fetch('/api/delivery-points');
+        const data = await resp.json();
+        deliveryPoints = data.points || [];
+        if (!deliveryPoints.length) {
+            listEl.innerHTML = '<div class="text-muted">Aucun point de livraison enregistré.</div>';
+            return;
+        }
+        listEl.innerHTML = deliveryPoints.map(pt => `
+            <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${pt.name}</strong> <span class="text-muted">(${pt.city})</span><br>
+                    <span class="small">${pt.address}</span>
+                    ${pt.info ? `<br><span class='text-muted small'>${pt.info}</span>` : ''}
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-1" data-action="edit" data-id="${pt.id}">Éditer</button>
+                    <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${pt.id}">Supprimer</button>
+                </div>
+            </div>
+        `).join('');
+        // Bind actions
+        listEl.querySelectorAll('button[data-action]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = btn.getAttribute('data-id');
+                const action = btn.getAttribute('data-action');
+                const pt = deliveryPoints.find(x => x.id === id);
+                if (action === 'edit') openDeliveryPointModal(pt);
+                if (action === 'delete') {
+                    const token = localStorage.getItem('adminToken');
+                    if (!confirm('Confirmer la suppression ?')) return;
+                    const resp = await fetch('/api/delivery-points', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+                        body: JSON.stringify({ id })
+                    });
+                    const jr = await resp.json();
+                    if (resp.ok) { showToast('Succès', 'Point supprimé', 'success'); loadDeliveryPoints(); }
+                    else showToast('Erreur', jr.message || 'Suppression impossible', 'error');
+                }
+            });
+        });
+    }
+    function openDeliveryPointModal(pt) {
+        const modal = new bootstrap.Modal(document.getElementById('deliveryPointModal'));
+        document.getElementById('deliveryPointId').value = pt?.id || '';
+        document.getElementById('deliveryPointName').value = pt?.name || '';
+        document.getElementById('deliveryPointCity').value = pt?.city || '';
+        document.getElementById('deliveryPointAddress').value = pt?.address || '';
+        document.getElementById('deliveryPointInfo').value = pt?.info || '';
+        modal.show();
+    }
+    document.getElementById('addDeliveryPointBtn')?.addEventListener('click', () => openDeliveryPointModal());
+    document.getElementById('deliveryPointForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('adminToken');
+        const id = document.getElementById('deliveryPointId').value;
+        const name = document.getElementById('deliveryPointName').value.trim();
+        const city = document.getElementById('deliveryPointCity').value.trim();
+        const address = document.getElementById('deliveryPointAddress').value.trim();
+        const info = document.getElementById('deliveryPointInfo').value.trim();
+        if (!name || !city || !address) { showToast('Erreur', 'Nom, ville et adresse requis', 'error'); return; }
+        const method = id ? 'PATCH' : 'POST';
+        const resp = await fetch('/api/delivery-points', {
+            method,
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+            body: JSON.stringify({ id, name, city, address, info })
+        });
+        const jr = await resp.json();
+        if (resp.ok) {
+            showToast('Succès', id ? 'Point modifié' : 'Point ajouté', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('deliveryPointModal')).hide();
+            loadDeliveryPoints();
+        } else {
+            showToast('Erreur', jr.message || 'Enregistrement impossible', 'error');
+        }
+    });
+    document.addEventListener('DOMContentLoaded', loadDeliveryPoints);
+    // --- Fin points de livraison ---
+
+    async function fillSeasonDeliveryPoints() {
+        const select = document.getElementById('seasonDeliveryPoint');
+        if (!select) return;
+        select.innerHTML = '<option value="">Chargement...</option>';
+        const resp = await fetch('/api/delivery-points');
+        const data = await resp.json();
+        const points = data.points || [];
+        if (!points.length) {
+            select.innerHTML = '<option value="">Aucun point disponible</option>';
+            return;
+        }
+        select.innerHTML = points.map(pt => `<option value="${pt.id}">${pt.name} (${pt.city})</option>`).join('');
+    }
+    document.getElementById('newSeasonBtn')?.addEventListener('click', fillSeasonDeliveryPoints);
+    document.getElementById('seasonDeliveryPoint')?.addEventListener('focus', fillSeasonDeliveryPoints);
 });

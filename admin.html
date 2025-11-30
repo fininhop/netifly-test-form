@@ -97,6 +97,51 @@
             </div>
         </div>
 
+        <!-- Section Points de Livraison -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Points de livraison</h2>
+                <button class="btn btn-primary" id="addDeliveryPointBtn">Ajouter un point</button>
+            </div>
+            <div class="card-body" id="deliveryPointsList">
+                <!-- Liste des points de livraison chargée dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Modal ajout/modification point de livraison -->
+        <div class="modal fade" id="deliveryPointModal" tabindex="-1" aria-labelledby="deliveryPointModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deliveryPointModalLabel">Point de livraison</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="deliveryPointForm">
+                            <input type="hidden" id="deliveryPointId" />
+                            <div class="mb-3">
+                                <label for="deliveryPointName" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="deliveryPointName" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="deliveryPointCity" class="form-label">Ville</label>
+                                <input type="text" class="form-control" id="deliveryPointCity" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="deliveryPointAddress" class="form-label">Adresse</label>
+                                <input type="text" class="form-control" id="deliveryPointAddress" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="deliveryPointInfo" class="form-label">Infos complémentaires</label>
+                                <textarea class="form-control" id="deliveryPointInfo"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="adminLogin" class="card p-3 mb-3">
             <form id="adminLoginForm" class="d-flex gap-2 align-items-center">
                 <input id="adminTokenInput" type="password" class="form-control form-control-sm" placeholder="Token admin" />
@@ -323,6 +368,10 @@
                             <div class="mb-3">
                                 <label for="seasonEnd" class="form-label">Date de fin *</label>
                                 <input type="date" id="seasonEnd" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="seasonDeliveryPoint" class="form-label">Point de livraison *</label>
+                                <select id="seasonDeliveryPoint" class="form-select" required></select>
                             </div>
                             <div class="mb-3">
                                 <label for="seasonDescription" class="form-label">Description (optionnel)</label>
