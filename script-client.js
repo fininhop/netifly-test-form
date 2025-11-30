@@ -664,12 +664,11 @@ async function loadDeliveryPointsForSeason(seasonId) {
     const deliveryPointSelect = document.getElementById('deliveryPointSelect');
     deliveryPointSelect.innerHTML = '<option value="">Sélectionnez un point de livraison...</option>';
     deliveryPointSelect.disabled = true;
-    if (!seasonId) return;
     try {
-        const response = await fetch(`/api/delivery-points?seasonId=${encodeURIComponent(seasonId)}`);
+        const response = await fetch(`/api/delivery-points`);
         const result = await response.json();
-        if (response.ok && result.deliveryPoints) {
-            availableDeliveryPoints = result.deliveryPoints;
+        if (response.ok && result.points) {
+            availableDeliveryPoints = result.points;
             if (availableDeliveryPoints.length > 0) {
                 availableDeliveryPoints.forEach(point => {
                     const option = document.createElement('option');
@@ -679,7 +678,7 @@ async function loadDeliveryPointsForSeason(seasonId) {
                 });
                 deliveryPointSelect.disabled = false;
             } else {
-                deliveryPointSelect.innerHTML = '<option value="">Aucun point disponible pour cette saison</option>';
+                deliveryPointSelect.innerHTML = '<option value="">Aucun point disponible</option>';
                 deliveryPointSelect.disabled = true;
             }
         } else {
