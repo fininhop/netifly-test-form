@@ -1651,14 +1651,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let deliveryPoints = [];
     async function loadDeliveryPoints() {
         const listEl = document.getElementById('deliveryPointsList');
-        if (!listEl) return;
+        if (!listEl) {
+            console.error('deliveryPointsList introuvable dans le DOM');
+            return;
+        }
         listEl.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
-        const resp = await fetch('/api/delivery-points');
-        const data = await parseApiResponse(resp);
-        deliveryPoints = data.points || [];
+        let data;
+        try {
+            const resp = await fetch('/api/delivery-points');
+            data = await parseApiResponse(resp);
+        } catch (err) {
+            listEl.innerHTML = '<div class="text-danger">Erreur de chargement des points de livraison (fetch): ' + err + '</div>';
+            return;
+        }
+        deliveryPoints = (data && data.points) ? data.points : [];
         console.log('Points de livraison reçus:', deliveryPoints);
         if (!deliveryPoints.length) {
-            listEl.innerHTML = '<div class="text-muted">Aucun point de livraison enregistré.</div>';
+            listEl.innerHTML = '<div class="text-warning">Aucun point de livraison trouvé ou chargement impossible.<br><small>Vérifiez l’authentification ou la connexion API.</small></div>';
             return;
         }
         listEl.innerHTML = deliveryPoints.map(pt => `
