@@ -1660,9 +1660,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let data;
         try {
             const resp = await fetch('/api/delivery-points');
+            console.log('Réponse brute du fetch:', resp);
             data = await parseApiResponse(resp);
+            console.log('Résultat du parseApiResponse:', data);
         } catch (err) {
-            listEl.innerHTML = '<div class="text-danger">Erreur de chargement des points de livraison (fetch): ' + err + '</div>';
+            listEl.innerHTML = '<div class="text-danger">Erreur de chargement des points de livraison (fetch ou parse): ' + err + '</div>';
+            console.error('Erreur de chargement des points de livraison (fetch ou parse):', err);
             return;
         }
         deliveryPoints = (data && data.points) ? data.points : [];
