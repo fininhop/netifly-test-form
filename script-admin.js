@@ -951,13 +951,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!orderId) return;
                 const okOrderDelete = await (window.showConfirmModal ? window.showConfirmModal(`Supprimer la commande de ${clientName} ?`) : Promise.resolve(confirm(`Supprimer la commande de ${clientName} ?`)));
                 if (!okOrderDelete) return;
+                let customMsg = '';
+                try {
+                    customMsg = (typeof window.prompt === 'function') ? (window.prompt("Message à envoyer à l'utilisateur (optionnel):", "Votre commande a été annulée par l'administrateur." ) || '') : '';
+                } catch(_) { customMsg = ''; }
                 const token = localStorage.getItem('adminToken');
                 showPageLoader('Suppression…');
                 try {
                     const resp = await fetch('/api/orders', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-                        body: JSON.stringify({ orderId })
+                        body: JSON.stringify({ orderId, message: customMsg })
                     });
                     const jr = await parseApiResponse(resp);
                     if (resp.ok) {

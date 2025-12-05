@@ -6,20 +6,26 @@ const admin = require('firebase-admin');
 
 if (!admin.apps.length) {
     try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        // Fix private_key formatting for Firebase
-        if (serviceAccount.private_key) {
-            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n').replace(/\n/g, '\n');
+        const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+        if (!raw) {
+            throw new Error('FIREBASE_SERVICE_ACCOUNT manquante');
         }
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
+        const serviceAccount = JSON.parse(raw);
+        if (serviceAccount.private_key) {
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+        global.db = admin.firestore();
+        global.seasonsAdminInitError = null;
     } catch (e) {
-        console.error("Erreur critique d'initialisation Admin SDK:", e.message);
+        console.error("Erreur d'initialisation Admin SDK (seasons):", e.message);
+        global.seasonsAdminInitError = e;
     }
+} else {
+    global.db = admin.firestore();
 }
 
-const db = admin.firestore();
+const db = global.db;
 
 async function handler(req, res) {
 
@@ -27,6 +33,9 @@ async function handler(req, res) {
     const { seasonId } = req.query;
 
     try {
+        if (global.seasonsAdminInitError || !db) {
+            return res.status(500).json({ message: 'Erreur de configuration serveur (Firebase).', error: (global.seasonsAdminInitError && global.seasonsAdminInitError.message) || 'Firestore non initialisé' });
+        }
         switch (method) {
             case 'GET':
                 if (seasonId) {

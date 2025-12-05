@@ -24,7 +24,7 @@ const db = global.db;
 
 module.exports = async (req, res) => {
     if (global.adminInitError) {
-        return res.status(500).json({ message: 'Erreur de configuration serveur.', error: global.adminInitError.message });
+        return res.status(500).json({ message: 'Erreur de configuration serveur (Firebase).', error: global.adminInitError.message });
     }
 
     const method = req.method;
@@ -100,7 +100,7 @@ module.exports = async (req, res) => {
             return res.status(200).json({ message: 'Compte supprimé' });
         }
         // Special route: verify credentials
-        if (method === 'POST' && req.url.endsWith('/verify')) {
+        if (method === 'POST' && (req.url.endsWith('/verify') || req.url.includes('/users/verify'))) {
             // POST /api/users/verify
             if (!email || !password) {
                 return res.status(400).json({ message: 'Email et mot de passe requis' });
